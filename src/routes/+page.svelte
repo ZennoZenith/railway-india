@@ -1,8 +1,5 @@
 <script lang="ts">
 import Swap from "$lib/components/swap-vertical-svgrepo-com.svelte";
-function func(e: any) {
-  console.log(e);
-}
 </script>
 
 <form action="" class="flex flex-col gap-2">
@@ -32,7 +29,6 @@ function func(e: any) {
       placeholder="To station"
       class="input input-bordered w-full"
       value="hello"
-      onchange={func}
     />
   </label>
 
