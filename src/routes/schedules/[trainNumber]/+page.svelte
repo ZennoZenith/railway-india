@@ -1,15 +1,8 @@
 <script lang="ts">
 import type { PageData } from "./$types";
 
-type Props = {
-  data: PageData;
-};
-
-const { data }: Props = $props();
-console.log(data);
+let { data }: { data: PageData } = $props();
 </script>
-
-<!-- 
 
 <section
   id="schedule"
@@ -31,7 +24,7 @@ console.log(data);
     Distance (km)
   </div>
   <div class="border-b-2 border-solid border-primary">Avg. Speed (km/h)</div>
-  {#each schedule as row}
+  {#each data.schedule as row}
     <div class="border-r-2 border-solid border-primary">{row.srNo}</div>
     <div class="border-r-2 border-solid border-primary">
       {row.station.stationCode}
@@ -52,7 +45,7 @@ console.log(data);
     <div>{row.speed}</div>
   {/each}
 </section>
- -->
+
 <style>
 #schedule {
   grid-template-columns: repeat(10, minmax(6em, 1fr));
