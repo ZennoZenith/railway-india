@@ -2,5 +2,5 @@
 import { page } from "$app/stores";
 </script>
 
-<p>Error</p>
-<h1>{$page.status}: {$page.error?.message}</h1>
+<h1>Error</h1>
+<p>{$page.status}: {$page.error?.message}</p>
