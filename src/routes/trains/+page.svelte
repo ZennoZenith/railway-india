@@ -1,20 +1,58 @@
 <script lang="ts">
-import { enhance } from "$app/forms";
+import { applyAction, enhance } from "$app/forms";
+import { invalidateAll } from "$app/navigation";
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
-import type { ActionData } from "./$types";
+import Search from "$lib/components/Search.svelte";
+import { getToastState } from "$lib/toast-state.svelte";
+import type { ActionData, SubmitFunction } from "./$types";
 
 type Props = {
   form: ActionData;
 };
 
 let { form }: Props = $props();
+const toastState = getToastState();
+
+const submit: SubmitFunction = (
+  { formData, cancel },
+) => {
+  const { trainNumber } = Object.fromEntries(formData);
+  if (trainNumber.toString().trim().length < 1) {
+    toastState.error("Train number is empty");
+    cancel();
+  }
+
+  return async ({ result }) => {
+    switch (result.type) {
+      case "redirect":
+        break;
+      case "error":
+        toastState.error(result.error);
+        break;
+      case "success":
+        // formElement.reset();
+        break;
+      case "failure":
+        if (result.data?.success === false) {
+          toastState.error(
+            result.data.error.trainNumber ?? trainNumber.toString(),
+          );
+        }
+
+        break;
+    }
+    // await update();
+    await applyAction(result);
+    await invalidateAll();
+  };
+};
 </script>
 
 <form
   action="/trains"
   method="POST"
   class="mx-auto flex mb-2 join max-w-max"
-  use:enhance
+  use:enhance={submit}
 >
   <label class="form-control w-full">
     <input
@@ -27,7 +65,7 @@ let { form }: Props = $props();
     {#if form?.success === false}
       <div class="label">
         <span class="label-text text-error">
-          {form.trainNumber}
+          {form.error.trainNumber}
         </span>
       </div>
     {/if}
@@ -38,6 +76,8 @@ let { form }: Props = $props();
   >
     Search
   </button>
+
+  <Search />
 </form>
 
 {#if form?.success}

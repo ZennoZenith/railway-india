@@ -3,7 +3,7 @@ import ApiClient from "$lib/server/api";
 import { type Actions, error, fail } from "@sveltejs/kit";
 import type { ApiError, TrainInfo } from "api-railway/dist/types";
 
-type FormReturnData = { success: false; trainNumber: string } | { success: true; data: TrainInfo };
+type FormReturnData = { success: false; error: { trainNumber: string } } | { success: true; data: TrainInfo };
 
 export const actions = {
   default: async ({ request }) => {
@@ -11,7 +11,7 @@ export const actions = {
     const trainNumber = formData.get("trainNumber");
 
     if (!trainNumber || trainNumber.toString().trim() === "") {
-      return fail(400, { success: false, trainNumber: "Train number is empty" } as FormReturnData);
+      return fail(400, { success: false, error: { trainNumber: "Train number is empty" } } as FormReturnData);
     }
 
     const { url, method, headers, returnType } = ApiClient.trains.getTrain(trainNumber.toString());
@@ -34,7 +34,7 @@ export const actions = {
 
     if (response[1].status > 299) {
       let err = data[1] as ApiError;
-      return fail(err.httpCode, { success: false, trainNumber: err.error } as FormReturnData);
+      return fail(err.httpCode, { success: false, error: { trainNumber: err.error } } as FormReturnData);
     }
 
     return { success: true, data: data[1] as typeof returnType } as FormReturnData;

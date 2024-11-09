@@ -27,7 +27,7 @@ let { form }: Props = $props();
       {#if form?.success === false}
         <div class="label">
           <span class="label-text text-error">
-            {form.trainNumber}
+            {form.error.trainNumber}
           </span>
         </div>
       {/if}
@@ -44,7 +44,6 @@ let { form }: Props = $props();
       type="checkbox"
       class="checkbox-primary inline"
       name="fullSchedule"
-      checked
     >
     Full schedule
   </label>
