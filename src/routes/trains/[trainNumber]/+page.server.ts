@@ -1,11 +1,12 @@
 import { catchError } from "$lib";
 import ApiClient from "$lib/server/api";
 import { error } from "@sveltejs/kit";
-import type { ApiError } from "api-railway";
+import type { ApiError } from "api-railway/dist/types";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
-  const { url, method, headers, returnType } = ApiClient.trains.getTrain(params.slug);
+export const load: PageServerLoad = async ({ params }) => {
+  const trainNumber = params.trainNumber;
+  const { url, method, headers, returnType } = ApiClient.trains.getTrain(trainNumber.toString());
 
   let response = await catchError(fetch(url, {
     headers,
@@ -25,8 +26,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
   if (response[1].status > 299) {
     let err = data[1] as ApiError;
-    console.log(data[1]);
-    error(err.httpCode, JSON.stringify(data[1]));
+    return error(err.httpCode, JSON.stringify(err.error));
   }
 
   return data[1] as typeof returnType;
