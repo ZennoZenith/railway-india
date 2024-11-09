@@ -13,21 +13,16 @@ export const actions = {
   default: async ({ request }) => {
     const formData = await request.formData();
     const trainNumber = formData.get("trainNumber");
-    const fullSch = formData.get("fullSchedule");
 
     if (!trainNumber) {
       return fail(500, { success: false, error: { trainNumber: "Train number is undefined" } } as FormReturnData);
-    }
-
-    if (!fullSch) {
-      return fail(500, { success: false, error: { trainNumber: "Full schedule is undefined" } } as FormReturnData);
     }
 
     if (trainNumber.toString().trim() === "") {
       return fail(400, { success: false, error: { trainNumber: "Train number is empty" } } as FormReturnData);
     }
 
-    const fullSchedule = formData.get("fullSchedule") === "on" ? true : false;
+    const fullSchedule = formData.get("fullSchedule")?.toString() === "on" ? true : false;
 
     const { url, method, headers, returnType } = ApiClient.schedules.getSchedule(trainNumber.toString(), fullSchedule);
 

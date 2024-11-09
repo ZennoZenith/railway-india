@@ -10,12 +10,8 @@ export const actions = {
     const formData = await request.formData();
     const stationCode = formData.get("stationCode");
 
-    if (!stationCode) {
+    if (!stationCode || stationCode.toString().trim() === "") {
       return fail(500, { success: false, station: "Station is undefined" } as FormReturnData);
-    }
-
-    if (stationCode.toString().trim() === "") {
-      return fail(400, { success: false, station: "Station is empty" } as FormReturnData);
     }
 
     const { url, method, headers, returnType } = ApiClient.stations.getStation(stationCode.toString());

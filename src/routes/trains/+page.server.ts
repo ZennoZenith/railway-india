@@ -10,11 +10,7 @@ export const actions = {
     const formData = await request.formData();
     const trainNumber = formData.get("trainNumber");
 
-    if (!trainNumber) {
-      return fail(500, { success: false, trainNumber: "Train number is undefined" } as FormReturnData);
-    }
-
-    if (trainNumber.toString().trim() === "") {
+    if (!trainNumber || trainNumber.toString().trim() === "") {
       return fail(400, { success: false, trainNumber: "Train number is empty" } as FormReturnData);
     }
 
