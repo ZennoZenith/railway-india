@@ -4,6 +4,7 @@ import { invalidateAll } from "$app/navigation";
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import Search from "$lib/components/Search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
+import type { DropDownListItem } from "$lib/types";
 import type { ActionData, SubmitFunction } from "./$types";
 
 type Props = {
@@ -12,6 +13,46 @@ type Props = {
 
 let { form }: Props = $props();
 const toastState = getToastState();
+
+let list: DropDownListItem[] = [
+  {
+    key: "1",
+    text: "Text 1",
+    dataText: "DATA text 1",
+  },
+  {
+    key: "2",
+    text: "Text 2",
+    dataText: "DATA text 2",
+  },
+  {
+    key: "3",
+    text: "Text 3",
+    dataText: "DATA text 3",
+  },
+  {
+    key: "4",
+    text: "Text 4",
+    dataText: "DATA text 4",
+  },
+  {
+    key: "5",
+    text: "Text 5",
+    dataText: "DATA text 5",
+  },
+  {
+    key: "6",
+    text: "Text 6",
+    dataText: "DATA text 6",
+  },
+  {
+    key: "7",
+    text: "Text 7",
+    dataText: "DATA text 7",
+  },
+];
+
+let selectedItemIndex = $state(-1);
 
 const submit: SubmitFunction = (
   { formData, cancel },
@@ -78,7 +119,15 @@ const submit: SubmitFunction = (
   </button>
 </form>
 
-<Search />
+<Search
+  {list}
+  {selectedItemIndex}
+  setFirstAsDefault={true}
+  class="input input-bordered w-full h-12"
+  onSelect={(item) => {
+    console.log(item);
+  }}
+/>
 
 {#if form?.success}
   {@const data = form.data}

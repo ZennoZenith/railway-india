@@ -7,14 +7,8 @@ export type Toast = {
   message: string;
 };
 
-export type InternalApiError = {
-  [key: string]: {
-    message: string;
-    [key: string]: any;
-  };
-};
-
-export type Tag = {
-  id: string;
-  title: string;
+export type DropDownListItem = {
+  key: string;
+  text: string;
+  dataText: string;
 };

@@ -1,37 +1,56 @@
 <script lang="ts">
+import type { DropDownListItem } from "$lib/types";
+
 type Props = {
   id?: string;
   placeholder?: string;
   focusLossTimeMs?: number;
   wrapAroundIndex?: boolean;
+  list: DropDownListItem[];
+  selectedItemIndex: number;
+  setFirstAsDefault?: boolean;
+  class?: string;
+  onSelect?: (selectedItemIndex: number) => void;
 };
 
-const {
+let {
   id = "Default id",
   placeholder = "Default placeholder",
   focusLossTimeMs = 50,
   wrapAroundIndex = true,
+  setFirstAsDefault = false,
+  list = [],
+  class: className = "input input-bordered w-full h-12",
+  selectedItemIndex = $bindable(-1),
+  onSelect,
 }: Props = $props();
 
+const event = new CustomEvent("onselect");
 let isDropdownOpen = $state(false);
 let dropdownRef: HTMLDivElement;
 
-const lists = [
-  { key: "1", text: "Opt 1" },
-  { key: "2", text: "Opt 2" },
-  { key: "3", text: "Opt 3" },
-  { key: "4", text: "Opt 4" },
-  { key: "5", text: "Opt 5" },
-] satisfies { key: string; text: string }[];
+let hoveredItemIndex: number = $state(-1);
 
-let selectedItemIndex: number = $state(-1);
-
-if (lists.length > 0) {
+if (list.length > 0 && setFirstAsDefault) {
   selectedItemIndex = 0;
+  hoveredItemIndex = 0;
 }
 
 const handleDropdownFocus = () => {
+  if (list.length === 0) {
+    return;
+  }
+
   isDropdownOpen = true; // togle state on click
+
+  if (hoveredItemIndex === -1) {
+    hoveredItemIndex = 0;
+  }
+
+  if (list.length > hoveredItemIndex) {
+    const optionsList = dropdownRef.children;
+    (optionsList[hoveredItemIndex] as HTMLElement).focus();
+  }
 };
 
 const handleDropdownFocusLoss = (
@@ -63,24 +82,23 @@ function onClickDropdown(
 function keyboardKeyHandler(
   event: KeyboardEvent & { currentTarget: EventTarget & HTMLButtonElement },
 ) {
-  if (lists.length === 0 || selectedItemIndex === -1) {
+  if (list.length === 0) {
     return;
   }
 
   const optionsList = dropdownRef.children;
-  let index = selectedItemIndex;
+  let index = hoveredItemIndex;
   if (event.code === "ArrowDown" || event.code === "ArrowRight") {
-    index = selectedItemIndex;
     if (index === -1) {
       return;
     }
 
-    if (index === lists.length - 1 && !wrapAroundIndex) {
+    if (index === list.length - 1 && !wrapAroundIndex) {
       return;
     }
-    selectedItemIndex = (index + 1) % lists.length;
+    // selectedItemIndex = (index + 1) % list.length;
+    index = (index + 1) % list.length;
   } else if (event.code === "ArrowUp" || event.code === "ArrowLeft") {
-    let index = selectedItemIndex;
     if (index === -1) {
       return;
     }
@@ -91,13 +109,13 @@ function keyboardKeyHandler(
 
     index--;
     if (index < 0) {
-      index = lists.length - 1;
+      index = list.length - 1;
     }
-    selectedItemIndex = index;
   } else {
     return;
   }
-  const item = lists[selectedItemIndex];
+  hoveredItemIndex = index;
+  const item = list[hoveredItemIndex];
   for (const ele of optionsList) {
     let d = ele as HTMLElement;
     if (d?.dataset?.key === item.key) {
@@ -107,35 +125,39 @@ function keyboardKeyHandler(
 }
 
 function selectItem(item?: string) {
-  selectedItemIndex = lists.findIndex((val) => val.key === item);
+  selectedItemIndex = list.findIndex((val) => val.key === item);
+  hoveredItemIndex = selectedItemIndex;
+  onSelect?.(selectedItemIndex);
 }
 </script>
 
-<div onfocusout={handleDropdownFocusLoss} class="w-64 relative">
+<div onfocusout={handleDropdownFocusLoss} class="w-64">
   <input
     type="text"
     {id}
-    class="input input-bordered w-full h-12"
+    class={className}
     {placeholder}
     onfocus={handleDropdownFocus}
-    value={lists[selectedItemIndex].text ?? ""}
+    value={list[selectedItemIndex]?.text || ""}
   >
 
-  <div
-    bind:this={dropdownRef}
-    class="absolute z-10 bg-neutral left-0 top-12 w-full"
-    style:visibility={isDropdownOpen ? "visible" : "hidden"}
-  >
-    {#each lists as item (item.key)}
-      <button
-        class="btn rounded-none text-neutral-content w-full h-12"
-        onclick={onClickDropdown}
-        onkeydown={keyboardKeyHandler}
-        data-key={item.key}
-        data-options={item.text}
-      >
-        {item.text}
-      </button>
-    {/each}
+  <div class="relative">
+    <div
+      bind:this={dropdownRef}
+      class="absolute z-10 bg-neutral left-0 top-0 w-full"
+      style:visibility={isDropdownOpen ? "visible" : "hidden"}
+    >
+      {#each list as item (item.key)}
+        <button
+          class="btn rounded-none text-neutral-content w-full h-12"
+          onclick={onClickDropdown}
+          onkeydown={keyboardKeyHandler}
+          data-key={item.key}
+          data-data-text={item.dataText}
+        >
+          {item.text}
+        </button>
+      {/each}
+    </div>
   </div>
 </div>
