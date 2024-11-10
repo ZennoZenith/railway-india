@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Button } from "$lib/components/ui/button";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { ToastType } from "$lib/types";
 
@@ -23,32 +24,32 @@ function showToast(toastType: ToastType): any {
 </script>
 
 <div class="flex flex-wrap gap-4 p-4">
-  <button
-    class="btn btn-primary rounded-lg"
+  <Button
+    class="bg-info text-info-foreground"
     type="button"
     onclick={() => showToast("INFO")}
   >
     Add Info Toast
-  </button>
-  <button
-    class="btn btn-primary rounded-lg"
+  </Button>
+  <Button
+    class="bg-success text-success-foreground"
     type="button"
     onclick={() => showToast("SUCCESS")}
   >
     Add Success Toast
-  </button>
-  <button
-    class="btn btn-primary rounded-lg"
+  </Button>
+  <Button
+    class="bg-warning text-warning-foreground"
     type="button"
     onclick={() => showToast("WARNING")}
   >
     Add Warning Toast
-  </button>
-  <button
-    class="btn btn-primary rounded-lg"
+  </Button>
+  <Button
+    class="bg-error text-error-foreground"
     type="button"
     onclick={() => showToast("ERROR")}
   >
     Add error Toast
-  </button>
+  </Button>
 </div>

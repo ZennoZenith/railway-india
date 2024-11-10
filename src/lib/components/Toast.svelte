@@ -30,7 +30,10 @@ switch (toast.toastType) {
 }
 </script>
 
-<div class="{toastTypeClass} alert" role="alert">
+<div
+  class="{toastTypeClass} rounded h-20 flex justify-center items-center gap-4 p-2"
+  role="alert"
+>
   {#if toast.toastType === "INFO"}
     <InfoSvg />
   {:else if toast.toastType === "SUCCESS"}
@@ -40,7 +43,7 @@ switch (toast.toastType) {
   {:else if toast.toastType === "ERROR"}
     <ErrorSvg />
   {/if}
-  <div class="">
+  <div class="flex-grow">
     {#if toast.title}
       <div class="">{toast.title}</div>
     {/if}

@@ -30,6 +30,9 @@ export class ToastState {
     this._toastToTimeout.set(
       value.id,
       setTimeout(() => {
+        if (durationMs === 0) {
+          return;
+        }
         this.remove(value.id);
       }, durationMs),
     );
