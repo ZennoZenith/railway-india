@@ -76,9 +76,9 @@ const submit: SubmitFunction = (
   >
     Search
   </button>
-
-  <Search />
 </form>
+
+<Search />
 
 {#if form?.success}
   {@const data = form.data}
