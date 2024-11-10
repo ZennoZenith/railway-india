@@ -12,25 +12,25 @@ type Props = {
 
 const { toast }: Props = $props();
 const toastState = getToastState();
-let alertClass: string = $state("");
+let toastTypeClass: string = $state("");
 
 switch (toast.toastType) {
   case "INFO":
-    alertClass = "alert-info";
+    toastTypeClass = "bg-info text-info-foreground";
     break;
   case "SUCCESS":
-    alertClass = "alert-success";
+    toastTypeClass = "bg-success text-success-foreground";
     break;
   case "WARNING":
-    alertClass = "alert-warning";
+    toastTypeClass = "bg-warning text-warning-foreground";
     break;
   case "ERROR":
-    alertClass = "alert-error";
+    toastTypeClass = "bg-error text-error-foreground";
     break;
 }
 </script>
 
-<div class="alert {alertClass}" role="alert">
+<div class="{toastTypeClass} alert" role="alert">
   {#if toast.toastType === "INFO"}
     <InfoSvg />
   {:else if toast.toastType === "SUCCESS"}

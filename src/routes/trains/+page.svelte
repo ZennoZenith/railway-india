@@ -4,6 +4,7 @@ import { invalidateAll } from "$app/navigation";
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import Search from "$lib/components/Search.svelte";
 import { Button } from "$lib/components/ui/button/index.js";
+import { Input } from "$lib/components/ui/input/index.js";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
 import type { ActionData, SubmitFunction } from "./$types";
@@ -91,6 +92,26 @@ const submit: SubmitFunction = (
 </script>
 
 <form
+  class=""
+  action="/trains"
+  method="POST"
+  use:enhance={submit}
+>
+  <div class="flex w-full max-w-sm items-center space-x-2">
+    <Input
+      type="text"
+      placeholder="Train number"
+      name="trainNumber"
+      value={form?.data?.trainNumber || ""}
+    />
+    <Button type="submit">Search</Button>
+  </div>
+  <p class="text-error text-sm">
+    Enter your email address.
+  </p>
+</form>
+
+<form
   action="/trains"
   method="POST"
   class="mx-auto flex mb-2 join max-w-max"
@@ -129,8 +150,6 @@ const submit: SubmitFunction = (
     console.log(item);
   }}
 />
-
-<Button>Click me</Button>
 
 {#if form?.success}
   {@const data = form.data}
