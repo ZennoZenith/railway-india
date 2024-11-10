@@ -3,6 +3,7 @@ import { applyAction, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import Search from "$lib/components/Search.svelte";
+import { Button } from "$lib/components/ui/button/index.js";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
 import type { ActionData, SubmitFunction } from "./$types";
@@ -128,6 +129,8 @@ const submit: SubmitFunction = (
     console.log(item);
   }}
 />
+
+<Button>Click me</Button>
 
 {#if form?.success}
   {@const data = form.data}
