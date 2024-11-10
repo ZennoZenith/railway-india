@@ -32,6 +32,14 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --info: 197 100% 50%;
+    --info-foreground: 240 10% 3.9%;
+    --success: 159 100% 33%;
+    --success-foreground: 240 10% 3.9%;
+    --warning: 45 100% 50%;
+    --warning-foreground: 240 10% 3.9%;
+    --error: 357 100% 67%;
+    --error-foreground: 240 10% 3.9%;
   }
 
   .dark {
@@ -62,6 +70,14 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --info: 197 100% 50%;
+    --info-foreground: 240 10% 3.9%;
+    --success: 159 100% 33%;
+    --success-foreground: 240 10% 3.9%;
+    --warning: 45 100% 50%;
+    --warning-foreground: 240 10% 3.9%;
+    --error: 357 100% 67%;
+    --error-foreground: 240 10% 3.9%;
   }
 }
 
