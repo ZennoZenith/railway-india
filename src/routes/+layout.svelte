@@ -8,7 +8,8 @@ let { children } = $props();
 setToastState();
 </script>
 
+<Toaster />
+
 {@render children()}
 
 <ToastTest />
-<Toaster />
