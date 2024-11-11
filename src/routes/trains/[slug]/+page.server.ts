@@ -5,7 +5,7 @@ import type { ApiError } from "api-railway/dist/types";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const trainNumber = params.trainNumber;
+  const trainNumber = params.slug;
   const { url, method, headers, returnType } = ApiClient.trains.getTrain(trainNumber.toString());
 
   let response = await catchError(fetch(url, {

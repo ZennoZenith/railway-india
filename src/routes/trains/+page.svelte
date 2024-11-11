@@ -1,7 +1,6 @@
 <script lang="ts">
 import { applyAction, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
-import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import { Button } from "$lib/components/ui/button/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { CreateSearchable } from "$lib/search.svelte";
@@ -9,6 +8,7 @@ import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
 import type { ActionData, SubmitFunction } from "./$types";
 import type { FormError } from "./+page.server";
+import TrainInfo from "./TrainInfo.svelte";
 
 type Props = {
   form: ActionData;
@@ -18,7 +18,6 @@ let { form }: Props = $props();
 const toastState = getToastState();
 const searchable = new CreateSearchable(100);
 let selectedDropdownItem = $state<DropDownListItem>();
-let filteredList = $state<DropDownListItem[]>([]);
 let list: DropDownListItem[] = [
   {
     key: "1",
@@ -30,32 +29,8 @@ let list: DropDownListItem[] = [
     text: "Text 2",
     dataText: "DATA text 2",
   },
-  {
-    key: "3",
-    text: "Text 3",
-    dataText: "DATA text 3",
-  },
-  {
-    key: "4",
-    text: "Text 4",
-    dataText: "DATA text 4",
-  },
-  {
-    key: "5",
-    text: "Text 5",
-    dataText: "DATA text 5",
-  },
-  {
-    key: "6",
-    text: "Text 6",
-    dataText: "DATA text 6",
-  },
-  {
-    key: "7",
-    text: "Text 7",
-    dataText: "DATA text 7",
-  },
 ];
+let filteredList = $state<DropDownListItem[]>(list);
 
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
@@ -159,54 +134,6 @@ const submit: SubmitFunction = (
 </form>
 
 {#if form?.success}
-  {@const data = form.data}
-  <section class="grid grid-cols-2 mx-auto w-max">
-    <div>Train Number</div>
-    <div>{data.trainNumber}</div>
-    <div>Train Name</div>
-    <div>{data.trainName}</div>
-    <div>Train Full Name</div>
-    <div>{data.trainFullName}</div>
-    <div>Train Runs On</div>
-    <div class="flex gap-2">
-      {#each trainRunsOnUtil(data.trainRunningDays) as day}
-        {#if day.state}
-          <span class="text-green-400">
-            {day.text}
-          </span>
-        {:else}
-          <span class="text-red-400">
-            {day.text}
-          </span>
-        {/if}
-      {/each}
-    </div>
-
-    <div>Available Classes</div>
-    <div>{data.availableClasses.join(", ")}</div>
-    <div>Pantry</div>
-    <div>{data.hasPantry ? "Yes" : "No"}</div>
-    <div>Train Type</div>
-    <div>{data.trainTypeCode}</div>
-    <div>Station From</div>
-    <a href={`/stations/${data.stationFrom.stationCode}`}>
-      {data.stationFrom.stationName} ({data.stationFrom.stationCode})</a>
-    <div>Departure Time</div>
-    <div>{data.departureTime}</div>
-    <div>Station To</div>
-    <a href={`/stations/${data.stationTo.stationCode}`}>
-      {data.stationTo.stationName} ({data.stationTo.stationCode})</a>
-    <div>Departure Time</div>
-    <div>{data.arrivalTime}</div>
-    <div>Duration</div>
-    <div>{DurationSecToHM(data.durationSec)}</div>
-    <div>Distance</div>
-    <div>{data.distance} km</div>
-    <div>Avrage Speed</div>
-    <div>{data.avgSpeed} km/h</div>
-    <div>Number of stops</div>
-    <div>{data.numberOfStops}</div>
-    <div>Return Train number</div>
-    <div>{data.returnTrainNumber}</div>
-  </section>
+  {@const trainInfo = form.data}
+  <TrainInfo {trainInfo} />
 {/if}
