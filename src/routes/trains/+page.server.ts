@@ -3,7 +3,8 @@ import ApiClient from "$lib/server/api";
 import { type Actions, error, fail } from "@sveltejs/kit";
 import type { ApiError, TrainInfo } from "api-railway/dist/types";
 
-type FormReturnData = { success: false; error: { trainNumber: string } } | { success: true; data: TrainInfo };
+export type FormError = { trainNumber?: string };
+type FormReturnData = { success: false; error: FormError } | { success: true; data: TrainInfo };
 
 export const actions = {
   default: async ({ request }) => {
