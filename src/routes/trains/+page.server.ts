@@ -1,10 +1,11 @@
 import { catchError } from "$lib";
 import ApiClient from "$lib/server/api";
 import { type Actions, error, fail } from "@sveltejs/kit";
-import type { ApiError, TrainGeneralInfo, TrainInfo } from "api-railway/dist/types";
+import type { ApiError, TrainInfo } from "api-railway/dist/types";
 
 export type FormError = { trainNumber?: string };
 type FormReturnData = { returnType: "Error"; error: FormError } | { returnType: "TrainInfo"; data: TrainInfo };
+
 export const actions = {
   train: async ({ request }) => {
     const formData = await request.formData();
