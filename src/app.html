@@ -3,10 +3,40 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/CascadiaCode-Regular.woff2"
+      type="font/woff2"
+      cas="font"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/CascadiaCode-Italic.woff2"
+      type="font/woff2"
+      cas="font"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/CascadiaCode-Bold.woff2"
+      type="font/woff2"
+      cas="font"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%sveltekit.assets%/font/CascadiaCode-BoldItalic.woff2"
+      type="font/woff2"
+      cas="font"
+      crossorigin
+    />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     %sveltekit.head%
   </head>
-  <body data-sveltekit-preload-data="hover">
+  <body data-sveltekit-preload-data="hover" class="font-cascadia">
     <div style="display: contents">%sveltekit.body%</div>
   </body>
 </html>

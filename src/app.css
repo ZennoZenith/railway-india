@@ -3,6 +3,39 @@
 @tailwind utilities;
 
 @layer base {
+  /* Custom font */
+  @font-face {
+    font-family: "CascadiaCode";
+    src: url("/font/CascadiaCode-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "CascadiaCode";
+    src: url("/font/CascadiaCode-Italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "CascadiaCode";
+    src: url("/font/CascadiaCode-Bold.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "AeonikPro";
+    src: url("/font/CascadiaCode-BoldItalic.woff2") format("woff2");
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
