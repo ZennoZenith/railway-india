@@ -1,11 +1,13 @@
 <script lang="ts">
 import { applyAction, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
+import { catchError, Debounce } from "$lib";
 import { Button } from "$lib/components/ui/button/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
+import { tick } from "svelte";
 import type { ActionData, SubmitFunction } from "./$types";
 import type { FormError } from "./+page.server";
 import TrainInfo from "./TrainInfo.svelte";
@@ -15,37 +17,53 @@ type Props = {
 };
 
 let { form }: Props = $props();
+let formInputValue: string = $state("");
+let formRef: HTMLFormElement;
 const toastState = getToastState();
 const searchable = new CreateSearchable(100);
+const debounce = new Debounce();
 let selectedDropdownItem = $state<DropDownListItem>();
-let list: DropDownListItem[] = [
-  {
-    key: "1",
-    text: "Text 1",
-    dataText: "DATA text 1",
-  },
-  {
-    key: "2",
-    text: "Text 2",
-    dataText: "DATA text 2",
-  },
-];
-let filteredList = $state<DropDownListItem[]>(list);
+let filteredList = $state<DropDownListItem[]>([]);
 
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
 ) {
   resetError("trainNumber");
+  debounce.debounceAsync(autocomplete)(event.currentTarget.value);
+}
 
-  filteredList = list.filter((val) => {
-    return val.text.toLowerCase().includes(
-      event.currentTarget.value.trim().toLowerCase(),
-    );
-  });
+async function autocomplete() {
+  const response = await catchError(fetch("/api/trains/search", {
+    method: "POST",
+    body: JSON.stringify({ q: formInputValue }),
+    headers: {
+      "content-type": "application/json",
+    },
+  }));
+
+  if (response[0]) {
+    console.error(response[0]);
+    return;
+  }
+
+  let data = await catchError<DropDownListItem[]>(response[1].json());
+  if (data[0]) {
+    console.error(data[0]);
+    return;
+  }
+
+  filteredList = data[1];
 }
 
 function selectDropdownItem(key: DropDownListItem["key"] | undefined) {
-  selectedDropdownItem = list.find((val) => val.key === key);
+  selectedDropdownItem = filteredList.find((val) => val.key === key);
+  searchable.closeDropdown();
+  formInputValue = selectedDropdownItem?.text ?? "";
+  if (selectedDropdownItem?.dataText) {
+    tick().then(() => {
+      formRef.requestSubmit();
+    });
+  }
 }
 
 function resetError(_key: keyof FormError) {
@@ -58,29 +76,24 @@ const submit: SubmitFunction = (
   { formData, cancel },
 ) => {
   const { trainNumber } = Object.fromEntries(formData);
-  if (trainNumber.toString().trim().length < 1) {
-    toastState.error("Train number is empty");
+  if (trainNumber.toString().trim().length === 0) {
+    toastState.error("Invalid train number");
     cancel();
   }
+
   return async ({ result }) => {
     switch (result.type) {
-      case "redirect":
-        break;
       case "error":
         toastState.error(result.error);
         break;
-      case "success":
-        // formElement.reset();
-        break;
       case "failure":
-        if (result.data?.success === false) {
+        if (result.data?.returnType === "Error") {
           toastState.error(
             result.data.error.trainNumber ?? trainNumber.toString(),
           );
         }
         break;
     }
-    // await update();
     await applyAction(result);
     await invalidateAll();
   };
@@ -88,40 +101,44 @@ const submit: SubmitFunction = (
 </script>
 
 <form
-  class="flex"
-  action="/trains"
+  bind:this={formRef}
+  class="flex content-between"
+  action="?/train"
   method="POST"
   use:enhance={submit}
 >
   <div
-    class="w-full max-w-sm relative"
+    class="relative"
     onfocusout={searchable.onFocusLoss}
   >
     <Input
       type="text"
       placeholder="Train number"
-      name="trainNumber"
-      value={selectedDropdownItem?.text ?? ""}
+      bind:value={formInputValue}
       autocomplete="off"
       onfocus={searchable.onFocus}
-      oninput={onInputChange}
+      onkeyup={onInputChange}
     />
-    {#if form?.success === false && form.error.trainNumber}
+    <input
+      type="hidden"
+      name="trainNumber"
+      value={selectedDropdownItem?.dataText ?? ""}
+    >
+    {#if form?.returnType === "Error" && form.error.trainNumber}
       <p class="text-error text-sm">
         {form.error.trainNumber}
       </p>
     {/if}
     {#if searchable.showDropdown}
-      <div class="absolute w-full -left-2 top-10 flex flex-col">
+      <div class="absolute w-full left top-10 flex flex-col">
         {#each filteredList as item (item.key)}
           <Button
             variant="secondary"
-            class="bg-secondary rounded-sm"
+            class="bg-secondary rounded-sm px-5 overflow-hidden justify-start"
             data-key={item.key}
             data-data-text={item.dataText}
             onclick={(e) => {
               selectDropdownItem(e.currentTarget.dataset.key);
-              searchable.closeDropdown();
             }}
           >
             {item.text}
@@ -133,7 +150,7 @@ const submit: SubmitFunction = (
   <Button type="submit">Search</Button>
 </form>
 
-{#if form?.success}
+{#if form?.returnType === "TrainInfo"}
   {@const trainInfo = form.data}
   <TrainInfo {trainInfo} />
 {/if}

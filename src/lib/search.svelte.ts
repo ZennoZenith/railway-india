@@ -2,7 +2,7 @@ import { browser } from "$app/environment";
 
 export class CreateSearchable {
   showDropdown = $state(false);
-  private focusLossTimeMs: number = 0;
+  private focusLossTimeMs: number;
   // private parentTracker?: HTMLElement;
 
   // constructor(parentTracker?: HTMLElement) {
@@ -13,10 +13,7 @@ export class CreateSearchable {
   //   this.parentTracker = parentTracker;
   // };
 
-  constructor(focusLossTimeMs?: number) {
-    if (!focusLossTimeMs) {
-      return;
-    }
+  constructor(focusLossTimeMs: number = 0) {
     this.focusLossTimeMs = focusLossTimeMs;
   }
 

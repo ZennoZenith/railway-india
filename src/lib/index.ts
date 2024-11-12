@@ -20,6 +20,33 @@ export function uuidv4() {
   );
 }
 
+export class Debounce {
+  private timeout: ReturnType<typeof setTimeout> | undefined;
+
+  debounce = (callback: Function, wait = 300) => {
+    return (...args: any[]) => {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => callback(...args), wait);
+    };
+  };
+
+  debounceAsync = (callback: Function, wait = 300) => {
+    return (...args: any[]) => {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(async () => await callback(...args), wait);
+    };
+  };
+}
+
+// export const debounce = (callback: Function, wait = 300) => {
+//   let timeout: ReturnType<typeof setTimeout>;
+
+//   return (...args: any[]) => {
+//     clearTimeout(timeout);
+//     timeout = setTimeout(() => callback(...args), wait);
+//   };
+// };
+
 export function DurationSecToHM(durationSec: number) {
   const hours = Math.floor(durationSec / 3600);
   const minutes = Math.floor(Math.floor(durationSec % 3600) / 60);

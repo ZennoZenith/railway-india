@@ -1,3 +1,3 @@
 import { Client } from "api-railway";
 
-export default new Client({ BASE_URL: "api.railway.zennozenith.com", PROTOCOL: "https" });
+export default new Client({ BASE_URL: "localhost:10004", PROTOCOL: "http" });

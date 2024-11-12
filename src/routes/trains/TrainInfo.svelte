@@ -38,12 +38,12 @@ const { trainInfo }: { trainInfo: TrainInfo } = $props();
     {trainInfo.stationFrom.stationName} ({trainInfo.stationFrom.stationCode})</a
   >
   <div>Departure Time</div>
-  <div>{trainInfo.departureTime}</div>
+  <div>{trainInfo.departureTime.slice(0, 5)}</div>
   <div>Station To</div>
   <a href={`/stations/${trainInfo.stationTo.stationCode}`}>
     {trainInfo.stationTo.stationName} ({trainInfo.stationTo.stationCode})</a>
-  <div>Departure Time</div>
-  <div>{trainInfo.arrivalTime}</div>
+  <div>Arrival Time</div>
+  <div>{trainInfo.arrivalTime.slice(0, 5)}</div>
   <div>Duration</div>
   <div>{DurationSecToHM(trainInfo.durationSec)}</div>
   <div>Distance</div>
