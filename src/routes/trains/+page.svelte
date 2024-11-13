@@ -2,6 +2,7 @@
 import { applyAction, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
 import { catchError, Debounce } from "$lib";
+import Dropdown from "$lib/components/Dropdown.svelte";
 import { Button } from "$lib/components/ui/button/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { CreateSearchable } from "$lib/search.svelte";
@@ -20,15 +21,18 @@ let { form }: Props = $props();
 let formInputValue: string = $state("");
 let formRef: HTMLFormElement;
 const toastState = getToastState();
-const searchable = new CreateSearchable(100);
+let searchable = new CreateSearchable();
 const debounce = new Debounce();
-let selectedDropdownItem = $state<DropDownListItem>();
-let filteredList = $state<DropDownListItem[]>([]);
+let selectedItem = $state<DropDownListItem>();
+let list = $state<DropDownListItem[]>([]);
 
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
 ) {
   resetError("trainNumber");
+  if (event.currentTarget.value.trim().length === 0) {
+    return;
+  }
   debounce.debounceAsync(autocomplete)(event.currentTarget.value);
 }
 
@@ -52,14 +56,13 @@ async function autocomplete() {
     return;
   }
 
-  filteredList = data[1];
+  list = data[1];
 }
 
-function selectDropdownItem(key: DropDownListItem["key"] | undefined) {
-  selectedDropdownItem = filteredList.find((val) => val.key === key);
-  searchable.closeDropdown();
-  formInputValue = selectedDropdownItem?.text ?? "";
-  if (selectedDropdownItem?.dataText) {
+function onSelect() {
+  formInputValue = selectedItem?.text ?? "";
+  console.log(formInputValue);
+  if (selectedItem?.dataText) {
     tick().then(() => {
       formRef.requestSubmit();
     });
@@ -103,7 +106,7 @@ const submit: SubmitFunction = (
 <form
   bind:this={formRef}
   class="flex content-between"
-  action="?/train"
+  action="/trains"
   method="POST"
   use:enhance={submit}
 >
@@ -122,30 +125,19 @@ const submit: SubmitFunction = (
     <input
       type="hidden"
       name="trainNumber"
-      value={selectedDropdownItem?.dataText ?? ""}
+      value={selectedItem?.dataText ?? ""}
     >
     {#if form?.returnType === "Error" && form.error.trainNumber}
       <p class="text-error text-sm">
         {form.error.trainNumber}
       </p>
     {/if}
-    {#if searchable.showDropdown}
-      <div class="absolute w-full left top-10 flex flex-col">
-        {#each filteredList as item (item.key)}
-          <Button
-            variant="secondary"
-            class="bg-secondary rounded-sm px-5 overflow-hidden justify-start"
-            data-key={item.key}
-            data-data-text={item.dataText}
-            onclick={(e) => {
-              selectDropdownItem(e.currentTarget.dataset.key);
-            }}
-          >
-            {item.text}
-          </Button>
-        {/each}
-      </div>
-    {/if}
+    <Dropdown
+      {searchable}
+      bind:selectedItem
+      {list}
+      {onSelect}
+    />
   </div>
   <Button type="submit">Search</Button>
 </form>

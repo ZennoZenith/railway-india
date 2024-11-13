@@ -22,30 +22,28 @@ export function uuidv4() {
 
 export class Debounce {
   private timeout: ReturnType<typeof setTimeout> | undefined;
+  private waitTime: number;
 
-  debounce = (callback: Function, wait = 300) => {
+  constructor(wait: number = 300) {
+    this.waitTime = wait;
+  }
+
+  debounce = (callback: Function, wait?: number) => {
+    wait ??= this.waitTime;
     return (...args: any[]) => {
       clearTimeout(this.timeout);
       this.timeout = setTimeout(() => callback(...args), wait);
     };
   };
 
-  debounceAsync = (callback: Function, wait = 300) => {
+  debounceAsync = (callback: Function, wait?: number) => {
+    wait ??= this.waitTime;
     return (...args: any[]) => {
       clearTimeout(this.timeout);
       this.timeout = setTimeout(async () => await callback(...args), wait);
     };
   };
 }
-
-// export const debounce = (callback: Function, wait = 300) => {
-//   let timeout: ReturnType<typeof setTimeout>;
-
-//   return (...args: any[]) => {
-//     clearTimeout(timeout);
-//     timeout = setTimeout(() => callback(...args), wait);
-//   };
-// };
 
 export function DurationSecToHM(durationSec: number) {
   const hours = Math.floor(durationSec / 3600);
@@ -102,4 +100,16 @@ export function trainRunsOnUtil(trainRunningDays: TrainRunsOnDays) {
   }
 
   return t;
+}
+
+export function trainRunningDate(dayCount: number = 1, showYear: boolean = false, date: Date = new Date()) {
+  dayCount -= 1;
+  if (dayCount < 0) {
+    dayCount = 0;
+  }
+
+  const newDate = new Date(date);
+  newDate.setDate(date.getDate() + dayCount);
+  const d = newDate.toDateString().split(" "); // 'Tue Nov 12 2024'
+  return `${d[0]}, ${d[2]} ${d[1]} ${showYear ? d[3] : ""}`;
 }
