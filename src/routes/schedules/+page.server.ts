@@ -3,28 +3,19 @@ import ApiClient from "$lib/server/api";
 import { type Actions, error, fail } from "@sveltejs/kit";
 import type { ApiError, ScheduleRow } from "api-railway/dist/types";
 
-type FormReturnData = { success: false; error: { trainNumber: string } } | {
-  success: true;
-  schedule: ScheduleRow[];
-  trainNumber: string;
-};
+export type FormError = { trainNumber?: string };
+type FormReturnData = { returnType: "Error"; error: FormError } | { returnType: "Schedule"; data: ScheduleRow[] };
 
 export const actions = {
   default: async ({ request }) => {
     const formData = await request.formData();
     const trainNumber = formData.get("trainNumber");
 
-    if (!trainNumber) {
-      return fail(500, { success: false, error: { trainNumber: "Train number is undefined" } } as FormReturnData);
+    if (!trainNumber || trainNumber.toString().trim() === "") {
+      return fail(400, { returnType: "Error", error: { trainNumber: "Train number is empty" } } as FormReturnData);
     }
 
-    if (trainNumber.toString().trim() === "") {
-      return fail(400, { success: false, error: { trainNumber: "Train number is empty" } } as FormReturnData);
-    }
-
-    const fullSchedule = formData.get("fullSchedule")?.toString() === "on" ? true : false;
-
-    const { url, method, headers, returnType } = ApiClient.schedules.getSchedule(trainNumber.toString(), fullSchedule);
+    const { url, method, headers, returnType } = ApiClient.schedules.getSchedule(trainNumber.toString());
 
     let response = await catchError(fetch(url, {
       headers,
@@ -44,9 +35,9 @@ export const actions = {
 
     if (response[1].status > 299) {
       let err = data[1] as ApiError;
-      return fail(err.httpCode, { success: false, error: { trainNumber: err.error } } as FormReturnData);
+      return fail(err.httpCode, { returnType: "Error", error: { trainNumber: err.error } } as FormReturnData);
     }
 
-    return { success: true, schedule: data[1] as typeof returnType, trainNumber } as FormReturnData;
+    return { returnType: "Schedule", data: data[1] as typeof returnType } as FormReturnData;
   },
 } satisfies Actions;

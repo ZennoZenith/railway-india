@@ -4,10 +4,9 @@ import { error } from "@sveltejs/kit";
 import type { ApiError } from "api-railway/dist/types";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, url: orignalUrl }) => {
-  const fullSchedule = orignalUrl.searchParams.get("fullSchedule") === "true" ? true : false;
-  const trainNumber = params.trainNumber;
-  const { url, method, headers, returnType } = ApiClient.schedules.getSchedule(trainNumber.toString(), fullSchedule);
+export const load: PageServerLoad = async ({ params }) => {
+  const trainNumber = params.slug;
+  const { url, method, headers, returnType } = ApiClient.schedules.getSchedule(trainNumber.toString());
 
   let response = await catchError(fetch(url, {
     headers,
@@ -30,5 +29,5 @@ export const load: PageServerLoad = async ({ params, url: orignalUrl }) => {
     return error(err.httpCode, JSON.stringify(err.error));
   }
 
-  return { schedule: data[1] as typeof returnType, fullSchedule };
+  return { data: data[1] as typeof returnType };
 };

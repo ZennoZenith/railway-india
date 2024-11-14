@@ -1,7 +1,7 @@
 <script lang="ts">
 </script>
 
-<nav class="flex gap-2 border-b p-4 text-lg">
+<nav class="flex gap-2 border-b p-4 text-base">
   <a
     href="/"
     class="hover:text-primary font-medium transition-colors"
