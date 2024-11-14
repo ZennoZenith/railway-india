@@ -1,5 +1,6 @@
 <script lang="ts">
-import { enhance } from "$app/forms";
+import { applyAction, enhance } from "$app/forms";
+import { invalidateAll } from "$app/navigation";
 import {
   catchError,
   Debounce,
@@ -12,9 +13,9 @@ import LocationPin from "$lib/components/location-pin.svelte";
 import { Button } from "$lib/components/ui/button";
 import { Input } from "$lib/components/ui/input";
 import { CreateSearchable } from "$lib/search.svelte";
+import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
-import type { TrainsBetweenStations } from "api-railway/dist/trainsBtwStations";
-import type { ActionData } from "./$types";
+import type { ActionData, SubmitFunction } from "./$types";
 
 type Props = {
   form: ActionData;
@@ -22,7 +23,6 @@ type Props = {
 
 let { form }: Props = $props();
 
-let formRef: HTMLFormElement;
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
 const fromStationSearchable = new CreateSearchable(100);
@@ -33,6 +33,7 @@ const debounce = new Debounce();
 let list = $state<DropDownListItem[]>([]);
 let fromStationSelected = $state<DropDownListItem>();
 let toStationSelected = $state<DropDownListItem>();
+const toastState = getToastState();
 
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
@@ -75,15 +76,55 @@ function onToStationSelect() {
   toStationInputValue = toStationSelected?.text ?? "";
   toStationInputRef?.focus();
 }
+
+const action: SubmitFunction = (
+  { formData, cancel },
+) => {
+  const { fromStation, toStation } = Object.fromEntries(formData);
+
+  console.log("hello");
+
+  // if (trainNumber.toString().trim().length === 0) {
+  //   toastState.error("Invalid train number");
+  //   cancel();
+  // }
+
+  return async ({ result }) => {
+    switch (result.type) {
+      case "error":
+        toastState.error(result.error);
+        break;
+      case "failure":
+        if (result.data?.fromStation.error) {
+          toastState.error(
+            result.data.fromStation.error ?? fromStation.toString(),
+          );
+        }
+        if (result.data?.toStation.error) {
+          toastState.error(
+            result.data.toStation.error ?? toStation.toString(),
+          );
+        }
+        if (result.data?.error?.error) {
+          toastState.error(
+            result.data.error.error,
+          );
+        }
+
+        break;
+    }
+    await applyAction(result);
+    await invalidateAll();
+  };
+};
 </script>
 
 <main>
   <form
-    bind:this={formRef}
     class="flex content-between"
     action="/"
     method="POST"
-    use:enhance
+    use:enhance={action}
   >
     <div
       class="relative"
