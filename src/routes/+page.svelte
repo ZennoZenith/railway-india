@@ -135,7 +135,7 @@ const action: SubmitFunction = (
 };
 </script>
 
-<main class="main p-4 mx-auto">
+<main class="max-w-[960px] p-4 mx-auto">
   <form
     class="grid grid-cols-1 gap-2"
     action="/"
@@ -287,7 +287,4 @@ const action: SubmitFunction = (
 </main>
 
 <style>
-.main {
-  max-width: 960px;
-}
 </style>
