@@ -30,7 +30,7 @@ function selectDropdownItem(
 </script>
 
 {#if searchable.showDropdown}
-  <div class="absolute w-full left top-10 flex flex-col">
+  <div class="absolute w-full left top-10 flex flex-col z-10">
     {#each list as item (item.key)}
       <button
         class="bg-secondary rounded-sm px-3 overflow-hidden flex items-center hover:bg-zinc-700 h-10 whitespace-nowrap"
