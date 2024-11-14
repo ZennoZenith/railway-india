@@ -135,156 +135,154 @@ const action: SubmitFunction = (
 };
 </script>
 
-<main class="max-w-[960px] p-4 mx-auto">
-  <form
-    class="grid grid-cols-1 gap-2"
-    action="/"
-    method="POST"
-    use:enhance={action}
+<form
+  class="grid grid-cols-1 gap-2"
+  action="/"
+  method="POST"
+  use:enhance={action}
+>
+  <div
+    class="relative"
+    onfocusout={fromStationSearchable.onFocusLoss}
   >
-    <div
-      class="relative"
-      onfocusout={fromStationSearchable.onFocusLoss}
+    <Input
+      bind:ref={fromStationInputRef}
+      type="text"
+      placeholder="From station"
+      bind:value={fromStationInputValue}
+      autocomplete="off"
+      required
+      minlength={0}
+      onfocus={fromStationSearchable.onFocus}
+      oninput={onInputChange}
+    />
+    <input
+      type="hidden"
+      name="fromStation"
+      value={fromStationSelected?.dataText ?? ""}
     >
-      <Input
-        bind:ref={fromStationInputRef}
-        type="text"
-        placeholder="From station"
-        bind:value={fromStationInputValue}
-        autocomplete="off"
-        required
-        minlength={0}
-        onfocus={fromStationSearchable.onFocus}
-        oninput={onInputChange}
-      />
-      <input
-        type="hidden"
-        name="fromStation"
-        value={fromStationSelected?.dataText ?? ""}
-      >
-      <Dropdown
-        searchable={fromStationSearchable}
-        bind:selectedItem={fromStationSelected}
-        onSelect={onFromStationSelect}
-        {list}
-      />
-      <button
-        class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center"
-        type="button"
-        onclick={swapStations}
-      >
-        <SwapVertical />
-      </button>
-    </div>
-    <div
-      class="relative"
-      onfocusout={toStationSearchable.onFocusLoss}
+    <Dropdown
+      searchable={fromStationSearchable}
+      bind:selectedItem={fromStationSelected}
+      onSelect={onFromStationSelect}
+      {list}
+    />
+    <button
+      class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center"
+      type="button"
+      onclick={swapStations}
     >
-      <Input
-        bind:ref={toStationInputRef}
-        type="text"
-        placeholder="To station"
-        bind:value={toStationInputValue}
-        autocomplete="off"
-        required
-        minlength={0}
-        onfocus={toStationSearchable.onFocus}
-        oninput={onInputChange}
-      />
-      <input
-        type="hidden"
-        name="toStation"
-        value={toStationSelected?.dataText ?? ""}
-      >
-      <Dropdown
-        searchable={toStationSearchable}
-        bind:selectedItem={toStationSelected}
-        onSelect={onToStationSelect}
-        {list}
-      />
-    </div>
+      <SwapVertical />
+    </button>
+  </div>
+  <div
+    class="relative"
+    onfocusout={toStationSearchable.onFocusLoss}
+  >
+    <Input
+      bind:ref={toStationInputRef}
+      type="text"
+      placeholder="To station"
+      bind:value={toStationInputValue}
+      autocomplete="off"
+      required
+      minlength={0}
+      onfocus={toStationSearchable.onFocus}
+      oninput={onInputChange}
+    />
+    <input
+      type="hidden"
+      name="toStation"
+      value={toStationSelected?.dataText ?? ""}
+    >
+    <Dropdown
+      searchable={toStationSearchable}
+      bind:selectedItem={toStationSelected}
+      onSelect={onToStationSelect}
+      {list}
+    />
+  </div>
 
-    <Button type="submit">Search</Button>
-  </form>
+  <Button type="submit">Search</Button>
+</form>
 
-  <section>
-    <!--  n Results for [from station] -> [to station] | [date] for quota [quota] -->
-  </section>
+<section>
+  <!--  n Results for [from station] -> [to station] | [date] for quota [quota] -->
+</section>
 
-  <section class="mt-8 flex flex-col gap-2">
-    {#if form?.data}
-      {#each form.data as train (train.trainId)}
-        <section class="border-solid border-2 rounded-xl">
-          <div
-            class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground"
-          >
-            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {train.trainName} ({train.trainNumber})
-            </div>
-            <a
-              class="flex gap-2 whitespace-nowrap"
-              href="/schedules/{train.trainNumber}"
-            >
-              Train Schedule
-              <span class="w-6 whitespace-nowrap">
-                <LocationPin />
-              </span>
-            </a>
+<section class="mt-8 flex flex-col gap-2">
+  {#if form?.data}
+    {#each form.data as train (train.trainId)}
+      <section class="border-solid border-2 rounded-xl">
+        <div
+          class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground"
+        >
+          <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
+            {train.trainName} ({train.trainNumber})
           </div>
-          <section class="p-2 grid grid-cols-3">
-            <div class="font-bold">
-              {train.stationFrom.departureTime?.slice(0, 5)}
-            </div>
-            <div class="flex justify-center">
-              {DurationSecToHM(train.durationSec)}
-            </div>
-            <div class="flex justify-end font-bold">
-              {train.stationTo.arrivalTime?.slice(0, 5)}
-            </div>
-          </section>
-
-          <section class="p-2 grid grid-cols-3">
-            <div class="">
-              <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-                {train.stationFrom.stationName}
-              </div>
-              <div class="">{trainRunningDate(train.stationFrom.dayCount)}</div>
-            </div>
-            <div class="flex justify-center items-center gap-2">
-              {#each trainRunsOnUtil(train.trainRunningDays) as day}
-                {#if day.state}
-                  <span class="text-foreground">
-                    {day.text}
-                  </span>
-                {:else}
-                  <span class="text-muted">
-                    {day.text}
-                  </span>
-                {/if}
-              {/each}
-            </div>
-            <div class="flex flex-col text-right">
-              <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-                {train.stationTo.stationName}
-              </div>
-              <div class="">
-                {trainRunningDate(train.stationTo.dayCount)}
-              </div>
-            </div>
-          </section>
-          <div class="p-2 flex gap-2">
-            Classes:
-            {#each train.availableClasses as classes}
-              <span class="">
-                {classes}
-              </span>
-            {/each}
+          <a
+            class="flex gap-2 whitespace-nowrap"
+            href="/schedules/{train.trainNumber}"
+          >
+            Train Schedule
+            <span class="w-6 whitespace-nowrap">
+              <LocationPin />
+            </span>
+          </a>
+        </div>
+        <section class="p-2 grid grid-cols-3">
+          <div class="font-bold">
+            {train.stationFrom.departureTime?.slice(0, 5)}
+          </div>
+          <div class="flex justify-center">
+            {DurationSecToHM(train.durationSec)}
+          </div>
+          <div class="flex justify-end font-bold">
+            {train.stationTo.arrivalTime?.slice(0, 5)}
           </div>
         </section>
-      {/each}
-    {/if}
-  </section>
-</main>
+
+        <section class="p-2 grid grid-cols-3">
+          <div class="">
+            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
+              {train.stationFrom.stationName}
+            </div>
+            <div class="">{trainRunningDate(train.stationFrom.dayCount)}</div>
+          </div>
+          <div class="flex justify-center items-center gap-2">
+            {#each trainRunsOnUtil(train.trainRunningDays) as day}
+              {#if day.state}
+                <span class="text-foreground">
+                  {day.text}
+                </span>
+              {:else}
+                <span class="text-muted">
+                  {day.text}
+                </span>
+              {/if}
+            {/each}
+          </div>
+          <div class="flex flex-col text-right">
+            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
+              {train.stationTo.stationName}
+            </div>
+            <div class="">
+              {trainRunningDate(train.stationTo.dayCount)}
+            </div>
+          </div>
+        </section>
+        <div class="p-2 flex gap-2">
+          Classes:
+          {#each train.availableClasses as classes}
+            <span class="">
+              {classes}
+            </span>
+          {/each}
+        </div>
+      </section>
+    {/each}
+  {/if}
+</section>
 
 <style>
 </style>

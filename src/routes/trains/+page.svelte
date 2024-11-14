@@ -105,16 +105,17 @@ const submit: SubmitFunction = (
 
 <form
   bind:this={formRef}
-  class="flex content-between"
+  class="flex justify-center"
   action="/trains"
   method="POST"
   use:enhance={submit}
 >
   <div
-    class="relative"
+    class="relative w-full max-w-[480px]"
     onfocusout={searchable.onFocusLoss}
   >
     <Input
+      class="w-full"
       type="text"
       placeholder="Train number"
       bind:value={formInputValue}

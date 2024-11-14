@@ -1,57 +1,98 @@
 <script lang="ts">
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
+import * as Table from "$lib/components/ui/table/index.js";
 import type { TrainInfo } from "api-railway/dist/types";
 
 const { trainInfo }: { trainInfo: TrainInfo } = $props();
 </script>
 
-<section class="grid grid-cols-2 mx-auto w-max">
-  <div>Train Number</div>
-  <div>{trainInfo.trainNumber}</div>
-  <div>Train Name</div>
-  <div>{trainInfo.trainName}</div>
-  <div>Train Full Name</div>
-  <div>{trainInfo.trainFullName}</div>
-  <div>Train Runs On</div>
-  <div class="flex gap-2">
-    {#each trainRunsOnUtil(trainInfo.trainRunningDays) as day}
-      {#if day.state}
-        <span class="text-green-400">
-          {day.text}
-        </span>
-      {:else}
-        <span class="text-red-400">
-          {day.text}
-        </span>
-      {/if}
-    {/each}
-  </div>
-
-  <div>Available Classes</div>
-  <div>{trainInfo.availableClasses.join(", ")}</div>
-  <div>Pantry</div>
-  <div>{trainInfo.hasPantry ? "Yes" : "No"}</div>
-  <div>Train Type</div>
-  <div>{trainInfo.trainTypeCode}</div>
-  <div>Station From</div>
-  <a href={`/stations/${trainInfo.stationFrom.stationCode}`}>
-    {trainInfo.stationFrom.stationName} ({trainInfo.stationFrom.stationCode})</a
-  >
-  <div>Departure Time</div>
-  <div>{trainInfo.departureTime.slice(0, 5)}</div>
-  <div>Station To</div>
-  <a href={`/stations/${trainInfo.stationTo.stationCode}`}>
-    {trainInfo.stationTo.stationName} ({trainInfo.stationTo.stationCode})</a>
-  <div>Arrival Time</div>
-  <div>{trainInfo.arrivalTime.slice(0, 5)}</div>
-  <div>Duration</div>
-  <div>{DurationSecToHM(trainInfo.durationSec)}</div>
-  <div>Distance</div>
-  <div>{trainInfo.distance} km</div>
-  <div>Avrage Speed</div>
-  <div>{trainInfo.avgSpeed} km/h</div>
-  <div>Number of stops</div>
-  <div>{trainInfo.numberOfStops}</div>
-  <div>Return Train number</div>
-  <div>{trainInfo.returnTrainNumber}</div>
-</section>
+<Table.Root class="mt-2">
+  <Table.Body>
+    <Table.Row>
+      <Table.Cell class="font-medium">Train number</Table.Cell>
+      <Table.Cell>{trainInfo.trainNumber}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Train Name</Table.Cell>
+      <Table.Cell>{trainInfo.trainName}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Train Full Name</Table.Cell>
+      <Table.Cell>{trainInfo.trainFullName}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Train Runs On</Table.Cell>
+      <Table.Cell class="flex gap-2">
+        {#each trainRunsOnUtil(trainInfo.trainRunningDays) as day}
+          {#if day.state}
+            <span class="text-green-400">
+              {day.text}
+            </span>
+          {:else}
+            <span class="text-red-400">
+              {day.text}
+            </span>
+          {/if}
+        {/each}
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Available Classes</Table.Cell>
+      <Table.Cell>{trainInfo.availableClasses.join(", ")}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Pantry</Table.Cell>
+      <Table.Cell>{trainInfo.hasPantry ? "Yes" : "No"}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Train Type</Table.Cell>
+      <Table.Cell>{trainInfo.trainTypeCode}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Station From</Table.Cell>
+      <Table.Cell>
+        <a href={`/stations/${trainInfo.stationFrom.stationCode}`}>
+          {trainInfo.stationFrom.stationName}
+          ({trainInfo.stationFrom.stationCode})
+        </a>
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Departure Time</Table.Cell>
+      <Table.Cell>{trainInfo.departureTime.slice(0, 5)}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Station To</Table.Cell>
+      <Table.Cell>
+        <a href={`/stations/${trainInfo.stationTo.stationCode}`}>
+          {trainInfo.stationTo.stationName}
+          ({trainInfo.stationTo.stationCode})
+        </a>
+      </Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Arrival Time</Table.Cell>
+      <Table.Cell>{trainInfo.arrivalTime.slice(0, 5)}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Duration</Table.Cell>
+      <Table.Cell>{DurationSecToHM(trainInfo.durationSec)}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Distance</Table.Cell>
+      <Table.Cell>{trainInfo.distance} km</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Avrage Speed</Table.Cell>
+      <Table.Cell>{trainInfo.avgSpeed} km/h</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Number of stops</Table.Cell>
+      <Table.Cell>{trainInfo.numberOfStops}</Table.Cell>
+    </Table.Row>
+    <Table.Row>
+      <Table.Cell class="font-medium">Return Train number</Table.Cell>
+      <Table.Cell>{trainInfo.returnTrainNumber}</Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table.Root>

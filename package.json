@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
-    "@sveltejs/kit": "^2.8.0",
+    "@sveltejs/kit": "^2.8.1",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/bun": "^1.1.13",
@@ -29,7 +29,7 @@
     "eslint-plugin-svelte": "^2.46.0",
     "globals": "^15.12.0",
     "mdsvex": "^0.11.2",
-    "svelte": "^5.1.15",
+    "svelte": "^5.1.16",
     "svelte-check": "^4.0.7",
     "svelte-radix": "^2.0.1",
     "tailwind-merge": "^2.5.4",
@@ -44,7 +44,7 @@
   "dependencies": {
     "api-railway": "^0.2.0-alpha.8",
     "better-auth": "^0.6.2",
-    "bits-ui": "^1.0.0-next.52",
+    "bits-ui": "^1.0.0-next.54",
     "drizzle-orm": "^0.33.0",
     "postgres": "^3.4.5"
   }
