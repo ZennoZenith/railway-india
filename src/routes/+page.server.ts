@@ -1,21 +1,32 @@
 import { catchError } from "$lib";
 import ApiClient from "$lib/server/api";
 import { type Actions, error, fail } from "@sveltejs/kit";
-import type { ApiError, TrainInfo } from "api-railway/dist/types";
+import type { ApiError, TrainsBetweenStations } from "api-railway/dist/types";
+import { type FormValidation, parse } from "./schema";
 
-export type FormError = { trainNumber?: string };
-type FormReturnData = { returnType: "Error"; error: FormError } | { returnType: "TrainInfo"; data: TrainInfo };
+type Ret = FormValidation & {
+  data: TrainsBetweenStations[] | undefined;
+};
 
 export const actions = {
   default: async ({ request }) => {
     const formData = await request.formData();
-    const trainNumber = formData.get("trainNumber");
+    const fromStation = formData.get("fromStation")?.toString();
+    const toStation = formData.get("toStation")?.toString();
 
-    if (!trainNumber || trainNumber.toString().trim() === "") {
-      return fail(400, { returnType: "Error", error: { trainNumber: "Train number is empty" } } as FormReturnData);
+    const form: Ret = {
+      ...parse({ fromStation: fromStation, toStation }),
+      data: undefined,
+    };
+
+    if (!form.success) {
+      return fail(400, form satisfies Ret as Ret);
     }
 
-    const { url, method, headers, returnType } = ApiClient.trains.getTrain(trainNumber.toString());
+    let fromS = form.fromStation.value;
+    let toS = form.toStation.value;
+
+    const { url, method, headers, returnType } = ApiClient.trainsBtwStations.getTrainsBtwStations(fromS, toS);
 
     let response = await catchError(fetch(url, {
       headers,
@@ -35,9 +46,12 @@ export const actions = {
 
     if (response[1].status > 299) {
       let err = data[1] as ApiError;
-      return fail(err.httpCode, { returnType: "Error", error: { trainNumber: err.error } } as FormReturnData);
+      return fail(
+        err.httpCode,
+        { ...form, success: false, error: err, data: undefined } satisfies Ret as Ret,
+      );
     }
 
-    return { returnType: "TrainInfo", data: data[1] as typeof returnType } as FormReturnData;
+    return { ...form, error: null, data: data[1] as TrainsBetweenStations[] } satisfies Ret as Ret;
   },
 } satisfies Actions;
