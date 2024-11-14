@@ -7,7 +7,7 @@ const toastState = getToastState();
 
 <div
   id="toast-container"
-  class="fixed flex flex-col gap-2 bottom-0 right-0 p-2"
+  class="fixed flex flex-col gap-2 bottom-0 right-0 p-2 z-30"
 >
   {#each toastState.toasts as toast (toast.id)}
     <Toast {toast} />
