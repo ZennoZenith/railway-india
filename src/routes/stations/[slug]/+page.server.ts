@@ -5,8 +5,8 @@ import type { ApiError } from "api-railway/dist/types";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const stationCode = params.stationCode;
-  const { url, method, headers, returnType } = ApiClient.stations.getStation(stationCode);
+  const stationCode = params.slug;
+  const { url, method, headers, returnType } = ApiClient.stations.getStation(stationCode.toString());
 
   let response = await catchError(fetch(url, {
     headers,
@@ -29,5 +29,5 @@ export const load: PageServerLoad = async ({ params }) => {
     return error(err.httpCode, JSON.stringify(err.error));
   }
 
-  return data[1] as typeof returnType;
+  return { data: data[1] as typeof returnType };
 };

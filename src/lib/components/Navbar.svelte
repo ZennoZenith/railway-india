@@ -22,10 +22,10 @@
     Schedule
   </a>
   <a
-    href="/trains"
+    href="/stations"
     class="text-muted-foreground hover:text-primary font-medium transition-colors"
   >
-    Trains
+    Stations
   </a>
   <a
     href="/docs"
