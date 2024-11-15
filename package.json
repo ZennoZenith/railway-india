@@ -30,7 +30,7 @@
     "globals": "^15.12.0",
     "mdsvex": "^0.11.2",
     "svelte": "^5.2.0",
-    "svelte-check": "^4.0.7",
+    "svelte-check": "^4.0.8",
     "svelte-radix": "^2.0.1",
     "tailwind-merge": "^2.5.4",
     "tailwind-variants": "^0.2.1",
