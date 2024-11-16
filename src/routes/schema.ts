@@ -40,7 +40,6 @@ export function parse(value: unknown): FormValidation {
     return createSuccessRet(results.output);
   }
 
-  console.log(results.issues);
   return {
     success: true,
     fromStation: {

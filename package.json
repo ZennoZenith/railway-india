@@ -17,7 +17,7 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/kit": "^2.8.1",
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.1",
     "@tailwindcss/typography": "^0.5.15",
     "@types/bun": "^1.1.13",
     "@types/eslint": "^9.6.1",
@@ -44,7 +44,7 @@
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.1.1",
     "@fontsource/manrope": "^5.1.0",
-    "api-railway": "^0.2.0-alpha.8",
+    "api-railway": "^0.2.0-alpha.9",
     "better-auth": "^0.6.2",
     "bits-ui": "^1.0.0-next.57",
     "drizzle-orm": "^0.33.0",

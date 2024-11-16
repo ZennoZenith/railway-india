@@ -24,7 +24,7 @@ export class ToastState {
       title,
       message,
     };
-    console.log(value);
+    console.info(value);
     this._toasts.push(value);
 
     this._toastToTimeout.set(

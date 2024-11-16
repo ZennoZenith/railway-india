@@ -93,8 +93,6 @@ const action: SubmitFunction = (
 ) => {
   const { fromStation, toStation } = Object.fromEntries(formData);
 
-  console.log("hello");
-
   // if (trainNumber.toString().trim().length === 0) {
   //   toastState.error("Invalid train number");
   //   cancel();

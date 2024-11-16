@@ -61,7 +61,6 @@ async function autocomplete() {
 
 function onSelect() {
   formInputValue = selectedItem?.text ?? "";
-  console.log(formInputValue);
   if (selectedItem?.dataText) {
     tick().then(() => {
       formRef.requestSubmit();

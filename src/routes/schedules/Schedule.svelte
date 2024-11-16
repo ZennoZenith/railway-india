@@ -1,5 +1,4 @@
 <script lang="ts">
-import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import * as Table from "$lib/components/ui/table/index.js";
 import type { ScheduleRow } from "api-railway/dist/schedules";
 
@@ -34,7 +33,7 @@ const { schedule }: { schedule: ScheduleRow[] } = $props();
   <Table.Body>
     {#each schedule as row}
       <Table.Row>
-        <Table.Cell>{row.srNo}</Table.Cell>
+        <Table.Cell>{row.srNo.split(".")[0]}</Table.Cell>
         <Table.Cell>
           {row.station.stationCode}
         </Table.Cell>

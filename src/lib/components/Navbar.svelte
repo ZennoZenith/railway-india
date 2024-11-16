@@ -4,7 +4,7 @@
 <nav class="flex gap-2 border-b p-4 text-base">
   <a
     href="/"
-    class="hover:text-primary font-medium transition-colors"
+    class="text-muted-foreground hover:text-primary font-medium transition-colors"
   >
     Home
   </a>
@@ -28,8 +28,9 @@
     Stations
   </a>
   <a
-    href="/docs"
-    class="hover:text-primary font-medium transition-colors ml-auto"
+    href="https://docs.railway.zennozenith.com"
+    target="_blank"
+    class="text-muted-foreground hover:text-primary font-medium transition-colors ml-auto"
   >
     Docs
   </a>
