@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ request }) => {
   const d: DropDownListItem[] = (data[1] as typeof returnType).map((val) => {
     return {
       dataText: val.stationCode,
-      text: `${val.stationName} (${val.stationCode})`,
+      text: `(${val.stationCode}) ${val.stationName} `,
       key: val.id.toString(),
     } satisfies DropDownListItem;
   });

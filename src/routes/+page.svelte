@@ -7,6 +7,7 @@ import { Input } from "$lib/components/ui/input";
 import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
+import { CalendarDate, type DateValue } from "@internationalized/date";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
 import type { TrainsBetweenStations } from "api-railway/dist/trainsBtwStations";
 import { untrack } from "svelte";
@@ -14,19 +15,30 @@ import {
   validateSchema,
   type ValidationError,
 } from "./api/trainsBtwStations/search/schema";
+import DatePicker from "./DatePicker.svelte";
 import TrainBtwStation from "./TrainBtwStation.svelte";
+
+const todayDate = new Date();
+const debounce = new Debounce();
+const toastState = getToastState();
+const fromStationSearchable = new CreateSearchable(100);
+const toStationSearchable = new CreateSearchable(100);
 
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
-const fromStationSearchable = new CreateSearchable(100);
-const toStationSearchable = new CreateSearchable(100);
 let fromStationInputValue: string = $state("");
 let toStationInputValue: string = $state("");
-const debounce = new Debounce();
+let date = $state<DateValue>(
+  new CalendarDate(
+    todayDate.getFullYear(),
+    todayDate.getMonth() + 1,
+    todayDate.getDate(),
+  ),
+);
+let formatedDate = $derived(date?.toString());
 let list = $state<DropDownListItem[]>([]);
 let fromStationSelected = $state<DropDownListItem>();
 let toStationSelected = $state<DropDownListItem>();
-const toastState = getToastState();
 
 let response = $state<Superposition<ValidationError, TrainsBetweenStations>>();
 
@@ -49,8 +61,6 @@ let stationIdMap = $derived.by(() => {
   }
   return m;
 });
-
-$inspect(stationIdMap);
 
 let validationErrors = $derived.by(() => {
   if (response?.success === false && response.error.type === "VALIDATION") {
@@ -145,7 +155,6 @@ async function onFormSubmit(
   const formData = new FormData(event.currentTarget);
   const formEntries = Object.fromEntries(formData.entries());
 
-  console.log(formEntries);
   let parsed = validateSchema(formEntries);
 
   if (!parsed.success) {
@@ -170,7 +179,7 @@ async function onFormSubmit(
 </script>
 
 <form
-  class="grid grid-cols-1 gap-2"
+  class="grid grid-cols-1 md:grid-cols-4 gap-2"
   onsubmit={onFormSubmit}
 >
   <div
@@ -203,7 +212,7 @@ async function onFormSubmit(
       <p class="text-sm text-error">Invalid station</p>
     {/if}
     <button
-      class="absolute right-3 -bottom-4 w-6 flex z-[5] justify-center items-center"
+      class="absolute right-3 -bottom-4 w-6 flex z-[5] justify-center items-center md:-right-4 md:bottom-0 md:top-0 md:rotate-90"
       type="button"
       onclick={swapStations}
     >
@@ -241,6 +250,17 @@ async function onFormSubmit(
     />
   </div>
   <input type="hidden" name="flexible" value="true" />
+  <div class="relative">
+    <DatePicker bind:value={date} />
+    {#if validationErrors?.date && validationErrors.date[0]}
+      <p class="text-sm text-error">Invalid date</p>
+    {/if}
+  </div>
+  <input
+    type="hidden"
+    name="date"
+    value={formatedDate}
+  >
   <Button type="submit">Search</Button>
 </form>
 

@@ -15,6 +15,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
+    "@internationalized/date": "^3.5.6",
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/kit": "^2.8.1",
     "@sveltejs/vite-plugin-svelte": "^4.0.1",
