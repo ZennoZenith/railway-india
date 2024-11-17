@@ -5,7 +5,7 @@ import type { ApiError, TrainsBetweenStations } from "api-railway/dist/types";
 import { type FormValidation, parse } from "./schema";
 
 type Ret = FormValidation & {
-  data: TrainsBetweenStations[] | undefined;
+  data: TrainsBetweenStations | undefined;
 };
 
 export const actions = {
@@ -52,6 +52,6 @@ export const actions = {
       );
     }
 
-    return { ...form, error: null, data: data[1] as TrainsBetweenStations[] } satisfies Ret as Ret;
+    return { ...form, error: null, data: data[1] as TrainsBetweenStations } satisfies Ret as Ret;
   },
 } satisfies Actions;

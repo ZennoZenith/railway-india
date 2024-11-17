@@ -1,5 +1,26 @@
 import type { TrainRunsOnDays } from "api-railway/dist/types";
 // place files you want to import through the `$lib` alias in this folder.
+export type FormDataValidationError = Record<string, [string, ...string[]] | undefined>;
+
+export type FormError<T extends FormDataValidationError> = {
+  type: "VALIDATION";
+  message: [string, ...string[]];
+} & T;
+
+export type GenericError = {
+  type: "GENERIC";
+  message: [string, ...string[]];
+};
+
+export type Superposition<T extends FormDataValidationError = {}, U = {}> = {
+  success: false;
+  httpCode: number;
+  error: FormError<T> | GenericError;
+} | {
+  success: true;
+  data: U;
+};
+
 export async function catchError<T, E = Error>(promise: Promise<T>): Promise<[undefined, T] | [E]> {
   try {
     const data = await promise;
@@ -9,8 +30,34 @@ export async function catchError<T, E = Error>(promise: Promise<T>): Promise<[un
   }
 }
 
+export async function fetchJson<T extends FormDataValidationError, U>(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Superposition<T, U>> {
+  const errorRes = await catchError(fetch(input, init));
+  if (errorRes[0]) {
+    return {
+      success: false,
+      httpCode: 500,
+      error: { type: "GENERIC", message: [errorRes[0].message] },
+    } satisfies Superposition;
+  }
+
+  const errorJson = await catchError<U>(errorRes[1].json());
+
+  if (errorJson[0]) {
+    return {
+      success: false,
+      httpCode: 500,
+      error: { type: "GENERIC", message: [errorJson[0].message] },
+    } satisfies Superposition;
+  }
+
+  return { success: true, data: errorJson[1] } satisfies Superposition<T, U>;
+}
+
 export function uuidv4() {
-  if (window?.isSecureContext) {
+  if (window && window.isSecureContext) {
     return crypto.randomUUID();
   }
 
