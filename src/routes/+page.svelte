@@ -1,13 +1,6 @@
 <script lang="ts">
-import {
-  catchError,
-  Debounce,
-  DurationSecToHM,
-  trainRunningDate,
-  trainRunsOnUtil,
-} from "$lib";
+import { catchError, Debounce, fetchJson, type Superposition } from "$lib";
 import Dropdown from "$lib/components/Dropdown.svelte";
-import LocationPin from "$lib/components/location-pin.svelte";
 import SwapVertical from "$lib/components/swap-vertical-svgrepo-com.svelte";
 import { Button } from "$lib/components/ui/button";
 import { Input } from "$lib/components/ui/input";
@@ -15,9 +8,13 @@ import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
+import type { TrainsBetweenStations } from "api-railway/dist/trainsBtwStations";
 import { untrack } from "svelte";
-import type { Return } from "./api/trainsBtwStations/search/+server";
-import { validateSchema } from "./api/trainsBtwStations/search/schema";
+import {
+  validateSchema,
+  type ValidationError,
+} from "./api/trainsBtwStations/search/schema";
+import TrainBtwStation from "./TrainBtwStation.svelte";
 
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
@@ -31,46 +28,63 @@ let fromStationSelected = $state<DropDownListItem>();
 let toStationSelected = $state<DropDownListItem>();
 const toastState = getToastState();
 
-let apiData = $state<Return>();
+let response = $state<Superposition<ValidationError, TrainsBetweenStations>>();
 
-const stationIdMap = new Map<number, StationGeneralInfo>();
-let trainsData = $derived.by(() => {
-  if (!apiData) {
-    return;
+let trainsOnDate = $derived.by(() => {
+  if (response?.success) {
+    return response.data.trainsOnDate;
   }
-
-  untrack(() => {
-    if (apiData && !apiData.success && apiData.error.type === "API") {
-      toastState.error(apiData.error.message);
-    }
-    if (apiData && !apiData.success && apiData.error.type === "VALIDATION") {
-      if (apiData.error.allTrains) {
-        toastState.error(apiData.error.allTrains[0]);
-      }
-      if (apiData.error.date) {
-        toastState.error(apiData.error.date[0]);
-      }
-      if (apiData.error.flexible) {
-        toastState.error(apiData.error.flexible[0]);
-      }
-      if (apiData.error.fromStation) {
-        toastState.error(apiData.error.fromStation[0]);
-      }
-      if (apiData.error.toStation) {
-        toastState.error(apiData.error.toStation[0]);
-      }
-    }
-  });
-
-  if (apiData.success) {
-    stationIdMap.clear();
-    apiData.data.stations.forEach(v => stationIdMap.set(v.id, v));
-    return apiData.data;
-  }
-  return undefined;
 });
 
-$inspect(apiData);
+let trainsOnAlternateDate = $derived.by(() => {
+  if (response?.success) {
+    return response.data.trainsOnAlternateDate;
+  }
+});
+
+let stationIdMap = $derived.by(() => {
+  const m = new Map<number, StationGeneralInfo>();
+  if (response?.success) {
+    response.data.stations.forEach(v => m.set(v.id, v));
+  }
+  return m;
+});
+
+$inspect(stationIdMap);
+
+let validationErrors = $derived.by(() => {
+  if (response?.success === false && response.error.type === "VALIDATION") {
+    return response.error.data;
+  }
+});
+
+$effect(() => {
+  response;
+  untrack(() => {
+    if (!response) {
+      return;
+    }
+
+    if (response.success) {
+      if (
+        response.data.trainsOnAlternateDate.length === 0
+        && response.data.trainsOnAlternateDate.length === 0
+      ) {
+        toastState.info(
+          `No trains found between ${fromStationSelected?.dataText} and ${toStationSelected?.dataText}`,
+        );
+      }
+      console.log();
+      return;
+    }
+
+    if (response.error.type === "VALIDATION") {
+      return;
+    }
+
+    toastState.error(response.error.messages[0]);
+  });
+});
 
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
@@ -82,7 +96,7 @@ function onInputChange(
 }
 
 async function autocomplete(query: string) {
-  const response = await catchError(fetch("/api/stations/search", {
+  const res = await catchError(fetch("/api/stations/search", {
     method: "POST",
     body: JSON.stringify({ q: query }),
     headers: {
@@ -90,12 +104,12 @@ async function autocomplete(query: string) {
     },
   }));
 
-  if (response[0]) {
-    console.error(response[0]);
+  if (res[0]) {
+    console.error(res[0]);
     return;
   }
 
-  let data = await catchError<DropDownListItem[]>(response[1].json());
+  let data = await catchError<DropDownListItem[]>(res[1].json());
   if (data[0]) {
     console.error(data[0]);
     return;
@@ -129,54 +143,29 @@ async function onFormSubmit(
 ) {
   event.preventDefault();
   const formData = new FormData(event.currentTarget);
+  const formEntries = Object.fromEntries(formData.entries());
 
-  const d = Object.fromEntries(formData.entries());
+  console.log(formEntries);
+  let parsed = validateSchema(formEntries);
 
-  let parsed = validateSchema(d);
-
-  if (parsed[0]) {
-    apiData = {
-      success: false,
-      error: {
-        httpCode: 400,
-        type: "VALIDATION",
-        ...parsed[0],
-      },
-    };
+  if (!parsed.success) {
+    response = parsed;
     return;
   }
 
-  const res = await catchError(fetch("/api/trainsBtwStations/search", {
-    method: "POST",
-    body: JSON.stringify(parsed[1]),
-  }));
+  const errorJson = await fetchJson<Superposition<{}, TrainsBetweenStations>>(
+    "/api/trainsBtwStations/search",
+    {
+      method: "POST",
+      body: JSON.stringify(parsed.data),
+    },
+  );
 
-  if (res[0]) {
-    apiData = {
-      success: false,
-      error: {
-        httpCode: 400,
-        type: "API",
-        message: res[0].message,
-      },
-    };
+  if (!errorJson.success) {
+    console.error(errorJson.error);
     return;
   }
-
-  let f = await catchError<Return>(res[1].json());
-  if (f[0]) {
-    apiData = {
-      success: false,
-      error: {
-        httpCode: 400,
-        type: "API",
-        message: f[0].message,
-      },
-    };
-    return;
-  }
-
-  apiData = f[1];
+  response = errorJson.data;
 }
 </script>
 
@@ -210,8 +199,11 @@ async function onFormSubmit(
       onSelect={onFromStationSelect}
       {list}
     />
+    {#if validationErrors?.fromStation && validationErrors.fromStation[0]}
+      <p class="text-sm text-error">Invalid station</p>
+    {/if}
     <button
-      class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center"
+      class="absolute right-3 -bottom-4 w-6 flex z-[5] justify-center items-center"
       type="button"
       onclick={swapStations}
     >
@@ -238,6 +230,9 @@ async function onFormSubmit(
       name="toStation"
       value={toStationSelected?.dataText ?? ""}
     >
+    {#if validationErrors?.toStation && validationErrors.toStation[0]}
+      <p class="text-sm text-error">Invalid station</p>
+    {/if}
     <Dropdown
       searchable={toStationSearchable}
       bind:selectedItem={toStationSelected}
@@ -245,7 +240,7 @@ async function onFormSubmit(
       {list}
     />
   </div>
-
+  <input type="hidden" name="flexible" value="true" />
   <Button type="submit">Search</Button>
 </form>
 
@@ -253,156 +248,30 @@ async function onFormSubmit(
   <!--  n Results for [from station] -> [to station] | [date] for quota [quota] -->
 </section>
 
-{#if trainsData}
+{#if trainsOnDate}
   <section class="mt-8 flex flex-col gap-2">
-    {#each trainsData.trainsOnDate as train (train.trainId)}
-      <section class="border-solid border-2 rounded-xl">
-        <div
-          class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground"
-        >
-          <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-            {train.trainName} ({train.trainNumber})
-          </div>
-          <a
-            class="flex gap-2 whitespace-nowrap"
-            href="/schedules/{train.trainNumber}"
-          >
-            Train Schedule
-            <span class="w-6 whitespace-nowrap">
-              <LocationPin />
-            </span>
-          </a>
-        </div>
-        <section class="p-2 grid grid-cols-3">
-          <div class="font-bold">
-            {train.stationFrom.departureTime?.slice(0, 5)}
-          </div>
-          <div class="flex justify-center">
-            {DurationSecToHM(train.durationSec)}
-          </div>
-          <div class="flex justify-end font-bold">
-            {train.stationTo.arrivalTime?.slice(0, 5)}
-          </div>
-        </section>
-
-        <section class="p-2 grid grid-cols-3">
-          <div class="">
-            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {stationIdMap.get(train.stationFrom.stationId)?.stationName}
-            </div>
-            <div class="">{trainRunningDate(train.stationFrom.dayCount)}</div>
-          </div>
-          <div class="flex justify-center items-center gap-2">
-            {#each trainRunsOnUtil(train.trainRunningDays) as day}
-              {#if day.state}
-                <span class="text-foreground">
-                  {day.text}
-                </span>
-              {:else}
-                <span class="text-muted">
-                  {day.text}
-                </span>
-              {/if}
-            {/each}
-          </div>
-          <div class="flex flex-col text-right">
-            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {stationIdMap.get(train.stationTo.stationId)?.stationName}
-            </div>
-            <div class="">
-              {trainRunningDate(train.stationTo.dayCount)}
-            </div>
-          </div>
-        </section>
-        <div class="p-2 flex gap-2">
-          Classes:
-          {#each train.availableClasses as classes}
-            <span class="">
-              {classes}
-            </span>
-          {/each}
-        </div>
-      </section>
-    {/each}
-  </section>
-
-  <!-- ------------------------  -->
-  <section class="mt-8">
-    Train on alternate days
-  </section>
-
-  <section class="mt-8 flex flex-col gap-2">
-    {#each trainsData.trainsOnAlternateDate as train (train.trainId)}
-      <section class="border-solid border-2 rounded-xl">
-        <div
-          class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground"
-        >
-          <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-            {train.trainName} ({train.trainNumber})
-          </div>
-          <a
-            class="flex gap-2 whitespace-nowrap"
-            href="/schedules/{train.trainNumber}"
-          >
-            Train Schedule
-            <span class="w-6 whitespace-nowrap">
-              <LocationPin />
-            </span>
-          </a>
-        </div>
-        <section class="p-2 grid grid-cols-3">
-          <div class="font-bold">
-            {train.stationFrom.departureTime?.slice(0, 5)}
-          </div>
-          <div class="flex justify-center">
-            {DurationSecToHM(train.durationSec)}
-          </div>
-          <div class="flex justify-end font-bold">
-            {train.stationTo.arrivalTime?.slice(0, 5)}
-          </div>
-        </section>
-
-        <section class="p-2 grid grid-cols-3">
-          <div class="">
-            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {stationIdMap.get(train.stationFrom.stationId)?.stationName}
-            </div>
-            <div class="">{trainRunningDate(train.stationFrom.dayCount)}</div>
-          </div>
-          <div class="flex justify-center items-center gap-2">
-            {#each trainRunsOnUtil(train.trainRunningDays) as day}
-              {#if day.state}
-                <span class="text-foreground">
-                  {day.text}
-                </span>
-              {:else}
-                <span class="text-muted">
-                  {day.text}
-                </span>
-              {/if}
-            {/each}
-          </div>
-          <div class="flex flex-col text-right">
-            <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {stationIdMap.get(train.stationTo.stationId)?.stationName}
-            </div>
-            <div class="">
-              {trainRunningDate(train.stationTo.dayCount)}
-            </div>
-          </div>
-        </section>
-        <div class="p-2 flex gap-2">
-          Classes:
-          {#each train.availableClasses as classes}
-            <span class="">
-              {classes}
-            </span>
-          {/each}
-        </div>
-      </section>
+    {#each trainsOnDate as train (train.trainId)}
+      <TrainBtwStation
+        {train}
+        fromStation={stationIdMap.get(train.stationFrom.stationId)}
+        toStation={stationIdMap.get(train.stationTo.stationId)}
+      />
     {/each}
   </section>
 {/if}
 
-<style>
-</style>
+<!-- ------------------------  -->
+{#if trainsOnAlternateDate && trainsOnAlternateDate.length > 0}
+  <div class="mt-8 py-4 px-4 bg-info text-info-foreground rounded-md">
+    Train on alternate days
+  </div>
+  <section class="mt-8 flex flex-col gap-2">
+    {#each trainsOnAlternateDate as train (train.trainId)}
+      <TrainBtwStation
+        {train}
+        fromStation={stationIdMap.get(train.stationFrom.stationId)}
+        toStation={stationIdMap.get(train.stationTo.stationId)}
+      />
+    {/each}
+  </section>
+{/if}

@@ -1,53 +1,35 @@
-import { catchError } from "$lib";
+import { catchError, fetchJson, type Superposition } from "$lib";
 import ApiClient from "$lib/server/api";
 import { error, json } from "@sveltejs/kit";
-import type { ApiError, TrainsBetweenStations } from "api-railway/dist/types";
+import type { ApiError } from "api-railway/dist/types";
 import type { RequestHandler } from "./$types";
-import { validateSchema, type ValidationError } from "./schema";
-
-export type Return = {
-  success: false;
-  error:
-    & ({
-      httpCode: number;
-    })
-    & (
-      | {
-        type: "VALIDATION";
-      } & ValidationError
-      | {
-        type: "API";
-        message: string;
-      }
-    );
-} | {
-  success: true;
-  data: TrainsBetweenStations;
-};
+import { validateSchema } from "./schema";
 
 export const POST: RequestHandler = async ({ request }) => {
   const j = await catchError<unknown>(request.json());
 
   if (j[0]) {
     error(
-      400,
+      500,
       JSON.stringify(
-        { success: false, error: { httpCode: 400, type: "API", message: "Invalid JSON" } } satisfies Return,
+        {
+          success: false,
+          httpCode: 400,
+          error: { type: "GENERIC", messages: ["Invalid JSON"] },
+        } satisfies Superposition,
       ),
     );
   }
 
   let reqData = validateSchema(j[1]);
-
-  if (reqData[0]) {
+  if (!reqData.success) {
     error(
-      400,
-      JSON.stringify({ success: false, error: { httpCode: 400, type: "VALIDATION", ...reqData[0] } } satisfies Return),
+      reqData.httpCode,
+      JSON.stringify(reqData),
     );
   }
 
-  const { fromStation, toStation, allTrains, date, flexible } = reqData[1];
-
+  const { fromStation, toStation, allTrains, flexible, date } = reqData.data;
   const { url, method, headers, returnType } = ApiClient.trainsBtwStations.getTrainsBtwStations(
     fromStation,
     toStation,
@@ -58,41 +40,28 @@ export const POST: RequestHandler = async ({ request }) => {
     },
   );
 
-  let response = await catchError(fetch(url, {
-    headers,
-    method,
-  }));
+  const reqJson = await fetchJson<typeof returnType | ApiError>(url, { headers, method });
 
-  if (response[0]) {
-    console.error(response[0]);
+  if (!reqJson.success) {
+    console.error(reqJson.error.messages[0]);
     error(
-      500,
+      reqJson.httpCode,
+      JSON.stringify(reqJson),
+    );
+  }
+
+  if ("error" in reqJson.data) {
+    error(
+      reqJson.data.httpCode,
       JSON.stringify(
-        { success: false, error: { httpCode: 400, type: "API", message: "Unable to fetch" } } satisfies Return,
+        {
+          success: false,
+          httpCode: reqJson.data.httpCode,
+          error: { type: "GENERIC", messages: [reqJson.data.error] },
+        } satisfies Superposition,
       ),
     );
   }
 
-  let data = await catchError<typeof returnType | ApiError>(response[1].json());
-  if (data[0]) {
-    console.error(data[0]);
-    error(
-      500,
-      JSON.stringify(
-        { success: false, error: { httpCode: 400, type: "API", message: "Fetch returned non JSON" } } satisfies Return,
-      ),
-    );
-  }
-
-  if (response[1].status > 299) {
-    let err = data[1] as ApiError;
-    error(
-      err.httpCode,
-      JSON.stringify(
-        { success: false, error: { httpCode: err.httpCode, type: "API", message: err.error } } satisfies Return,
-      ),
-    );
-  }
-
-  return json({ success: true, data: data[1] as TrainsBetweenStations } satisfies Return);
+  return json({ success: true, data: reqJson.data } satisfies Superposition);
 };

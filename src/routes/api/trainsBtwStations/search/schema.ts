@@ -1,3 +1,4 @@
+import type { FormDataValidationError, Superposition } from "$lib";
 import {
   flatten,
   type InferOutput,
@@ -39,27 +40,31 @@ const schema = object(
 );
 type Schema = InferOutput<typeof schema>;
 
-export type ValidationError = {
+export interface ValidationError extends FormDataValidationError {
   fromStation?: [string, ...string[]];
   toStation?: [string, ...string[]];
   flexible?: [string, ...string[]];
   allTrains?: [string, ...string[]];
   date?: [string, ...string[]];
-};
+}
 
-export function validateSchema(data: unknown): [undefined, Schema] | [ValidationError] {
+export function validateSchema(data: unknown): Superposition<ValidationError, Schema> {
   const d = safeParse(schema, data);
   if (d.success) {
-    return [undefined, d.output];
+    return { success: true, data: d.output };
   }
 
   const issues = flatten<typeof schema>(d.issues);
 
-  return [{
-    fromStation: issues.nested?.fromStation,
-    toStation: issues.nested?.toStation,
-    flexible: issues.nested?.flexible,
-    allTrains: issues.nested?.allTrains,
-    date: issues.nested?.date,
-  }];
+  return {
+    success: false,
+    httpCode: 400,
+    error: {
+      type: "VALIDATION",
+      messages: ["Validation error"],
+      data: {
+        ...issues.nested,
+      },
+    },
+  };
 }
