@@ -102,7 +102,37 @@ function onInputChange(
   if (event.currentTarget.value.trim().length === 0) {
     return;
   }
+
+  if (event.currentTarget.id === "from-station") {
+    fromStationSelected = undefined;
+  } else if (event.currentTarget.id === "to-station") {
+    toStationSelected = undefined;
+  }
+
+  resetError(event.currentTarget.id);
   debounce.debounceAsync(autocomplete)(event.currentTarget.value);
+}
+
+function resetError(id?: string) {
+  if (!response) {
+    return;
+  }
+
+  if (response.success) {
+    return;
+  }
+
+  if (response.error.type !== "VALIDATION") {
+    return;
+  }
+
+  if (id === "from-station") {
+    response.error.data.fromStation = undefined;
+  } else if (id === "to-station") {
+    response.error.data.toStation = undefined;
+  } else {
+    response.error.data = {};
+  }
 }
 
 async function autocomplete(query: string) {
@@ -199,6 +229,7 @@ async function onFormSubmit(
     onfocusout={fromStationSearchable.onFocusLoss}
   >
     <Input
+      id="from-station"
       bind:ref={fromStationInputRef}
       type="text"
       placeholder="From station"
@@ -220,8 +251,10 @@ async function onFormSubmit(
       onSelect={onFromStationSelect}
       {list}
     />
-    {#if validationErrors?.fromStation && validationErrors.fromStation[0]}
-      <p class="text-sm text-error">Invalid station</p>
+    {#if validationErrors?.fromStation}
+      {#each validationErrors.fromStation as err}
+        <p class="text-sm text-error">{err}</p>
+      {/each}
     {/if}
     <button
       class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center md:-right-4 md:top-1.5 md:rotate-90"
@@ -236,6 +269,7 @@ async function onFormSubmit(
     onfocusout={toStationSearchable.onFocusLoss}
   >
     <Input
+      id="to-station"
       bind:ref={toStationInputRef}
       type="text"
       placeholder="To station"

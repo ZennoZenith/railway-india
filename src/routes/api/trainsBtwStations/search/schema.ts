@@ -20,8 +20,8 @@ import {
 const schema = pipe(
   object(
     {
-      fromStation: pipe(string("fromStation should be string"), trim(), nonEmpty("From station cannot be empty")),
-      toStation: pipe(string("toStation should be string"), trim(), nonEmpty("To station cannot be empty")),
+      fromStation: pipe(string("fromStation should be string"), trim(), nonEmpty("From station invalid")),
+      toStation: pipe(string("toStation should be string"), trim(), nonEmpty("To station invalid")),
       allTrains: optional(
         pipe(
           string(),
