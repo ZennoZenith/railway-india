@@ -1,0 +1,7 @@
+{
+  "apiClient": {
+    "API_VERSION": "v1",
+    "BASE_URL": "localhost:5000",
+    "PROTOCOL": "http"
+  }
+}

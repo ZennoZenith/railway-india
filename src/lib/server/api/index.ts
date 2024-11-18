@@ -1,3 +1,4 @@
+import { config } from "$lib/server/config";
 import { Client } from "api-railway";
 
-export default new Client({ BASE_URL: "localhost:5000", PROTOCOL: "http" });
+export default new Client({ ...config.apiClient });

@@ -47,7 +47,7 @@
     "@fontsource/manrope": "^5.1.0",
     "api-railway": "^0.2.0-alpha.11",
     "better-auth": "^0.6.2",
-    "bits-ui": "^1.0.0-next.58",
+    "bits-ui": "^1.0.0-next.59",
     "drizzle-orm": "^0.33.0",
     "postgres": "^3.4.5"
   }
