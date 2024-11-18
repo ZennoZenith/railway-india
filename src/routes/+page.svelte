@@ -7,7 +7,11 @@ import { Input } from "$lib/components/ui/input";
 import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
-import { CalendarDate, type DateValue } from "@internationalized/date";
+import {
+  CalendarDate,
+  DateFormatter,
+  type DateValue,
+} from "@internationalized/date";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
 import type { TrainsBetweenStations } from "api-railway/dist/trainsBtwStations";
 import { untrack } from "svelte";
@@ -23,6 +27,8 @@ const debounce = new Debounce();
 const toastState = getToastState();
 const fromStationSearchable = new CreateSearchable(100);
 const toStationSearchable = new CreateSearchable(100);
+const stationIdMap = new Map<number, StationGeneralInfo>();
+const df = new DateFormatter("en-US", { dateStyle: "full" });
 
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
@@ -39,6 +45,9 @@ let formatedDate = $derived(date?.toString());
 let list = $state<DropDownListItem[]>([]);
 let fromStationSelected = $state<DropDownListItem>();
 let toStationSelected = $state<DropDownListItem>();
+let lastSelectedFromStation = $state<StationGeneralInfo>();
+let lastSelectedToStation = $state<StationGeneralInfo>();
+let lastSelectedDate = $state<string>("2002-03-19");
 
 let response = $state<Superposition<ValidationError, TrainsBetweenStations>>();
 
@@ -52,14 +61,6 @@ let trainsOnAlternateDate = $derived.by(() => {
   if (response?.success) {
     return response.data.trainsOnAlternateDate;
   }
-});
-
-let stationIdMap = $derived.by(() => {
-  const m = new Map<number, StationGeneralInfo>();
-  if (response?.success) {
-    response.data.stations.forEach(v => m.set(v.id, v));
-  }
-  return m;
 });
 
 let validationErrors = $derived.by(() => {
@@ -216,6 +217,23 @@ async function onFormSubmit(
     console.error(errorJson.error);
     return;
   }
+
+  if (errorJson.data.success) {
+    stationIdMap.clear();
+    errorJson.data.data.stations.forEach(v => stationIdMap.set(v.id, v));
+
+    if (fromStationSelected) {
+      lastSelectedFromStation = stationIdMap.get(
+        parseInt(fromStationSelected.key),
+      );
+    }
+    if (toStationSelected) {
+      lastSelectedToStation = stationIdMap.get(
+        parseInt(toStationSelected.key),
+      );
+    }
+    lastSelectedDate = formatedDate;
+  }
   response = errorJson.data;
 }
 </script>
@@ -245,17 +263,17 @@ async function onFormSubmit(
       name="fromStation"
       value={fromStationSelected?.dataText ?? ""}
     >
+    {#if validationErrors?.fromStation}
+      {#each validationErrors.fromStation as err}
+        <p class="text-sm text-error">{err}</p>
+      {/each}
+    {/if}
     <Dropdown
       searchable={fromStationSearchable}
       bind:selectedItem={fromStationSelected}
       onSelect={onFromStationSelect}
       {list}
     />
-    {#if validationErrors?.fromStation}
-      {#each validationErrors.fromStation as err}
-        <p class="text-sm text-error">{err}</p>
-      {/each}
-    {/if}
     <button
       class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center md:-right-4 md:top-1.5 md:rotate-90"
       type="button"
@@ -312,34 +330,53 @@ async function onFormSubmit(
   <Button type="submit">Search</Button>
 </form>
 
-<section>
-  <!--  n Results for [from station] -> [to station] | [date] for quota [quota] -->
+<section class="flex flex-col gap-4 mt-4">
+  {#if trainsOnDate}
+    <section class="border-solid border-2 rounded-md p-2">
+      {trainsOnDate?.length} results |
+      <span class="text-nowrap">
+        {lastSelectedFromStation?.stationName}
+        &rightarrow;
+        {lastSelectedToStation?.stationName}
+      </span>
+      | {df.format(new Date(lastSelectedDate))}
+    </section>
+
+    <section class="flex flex-col gap-2">
+      {#each trainsOnDate as train (train.trainId)}
+        <TrainBtwStation
+          {train}
+          fromStation={stationIdMap.get(train.stationFrom.stationId)}
+          toStation={stationIdMap.get(train.stationTo.stationId)}
+        />
+      {/each}
+    </section>
+  {/if}
+
+  <!-- ------------------------  -->
+  {#if trainsOnAlternateDate && trainsOnAlternateDate.length > 0}
+    <div class="py-4 px-4 bg-info text-info-foreground rounded-md">
+      Train on alternate days
+    </div>
+
+    <section class="border-solid border-2 rounded-md p-2">
+      {trainsOnAlternateDate?.length} results |
+      <span class="text-nowrap">
+        {lastSelectedFromStation?.stationName}
+        &rightarrow;
+        {lastSelectedToStation?.stationName}
+      </span>
+      | {df.format(new Date(lastSelectedDate))}
+    </section>
+
+    <section class="flex flex-col gap-2">
+      {#each trainsOnAlternateDate as train (train.trainId)}
+        <TrainBtwStation
+          {train}
+          fromStation={stationIdMap.get(train.stationFrom.stationId)}
+          toStation={stationIdMap.get(train.stationTo.stationId)}
+        />
+      {/each}
+    </section>
+  {/if}
 </section>
-
-{#if trainsOnDate}
-  <section class="mt-8 flex flex-col gap-2">
-    {#each trainsOnDate as train (train.trainId)}
-      <TrainBtwStation
-        {train}
-        fromStation={stationIdMap.get(train.stationFrom.stationId)}
-        toStation={stationIdMap.get(train.stationTo.stationId)}
-      />
-    {/each}
-  </section>
-{/if}
-
-<!-- ------------------------  -->
-{#if trainsOnAlternateDate && trainsOnAlternateDate.length > 0}
-  <div class="mt-8 py-4 px-4 bg-info text-info-foreground rounded-md">
-    Train on alternate days
-  </div>
-  <section class="mt-8 flex flex-col gap-2">
-    {#each trainsOnAlternateDate as train (train.trainId)}
-      <TrainBtwStation
-        {train}
-        fromStation={stationIdMap.get(train.stationFrom.stationId)}
-        toStation={stationIdMap.get(train.stationTo.stationId)}
-      />
-    {/each}
-  </section>
-{/if}
