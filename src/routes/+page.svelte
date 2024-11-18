@@ -1,5 +1,5 @@
 <script lang="ts">
-import { catchError, Debounce, fetchJson, type Superposition } from "$lib";
+import { Debounce, fetchJson, type Superposition } from "$lib";
 import Dropdown from "$lib/components/Dropdown.svelte";
 import SwapVertical from "$lib/components/swap-vertical-svgrepo-com.svelte";
 import { Button } from "$lib/components/ui/button";
@@ -106,26 +106,35 @@ function onInputChange(
 }
 
 async function autocomplete(query: string) {
-  const res = await catchError(fetch("/api/stations/search", {
-    method: "POST",
-    body: JSON.stringify({ q: query }),
-    headers: {
-      "content-type": "application/json",
+  const errorJson = await fetchJson<Superposition<{}, StationGeneralInfo[]>>(
+    "/api/stations/search",
+    {
+      method: "POST",
+      body: JSON.stringify({ q: query }),
+      headers: {
+        "content-type": "application/json",
+      },
     },
-  }));
+  );
 
-  if (res[0]) {
-    console.error(res[0]);
+  if (!errorJson.success) {
+    console.error(errorJson.error);
+    return;
+  }
+  const response = errorJson.data;
+
+  if (!response.success) {
+    list = [];
     return;
   }
 
-  let data = await catchError<DropDownListItem[]>(res[1].json());
-  if (data[0]) {
-    console.error(data[0]);
-    return;
-  }
-
-  list = data[1];
+  list = response.data.map(v => {
+    return {
+      dataText: v.stationCode,
+      text: `(${v.stationCode}) ${v.stationName}`,
+      key: v.id.toString(),
+    } as DropDownListItem;
+  });
 }
 
 function onFromStationSelect() {
@@ -167,6 +176,9 @@ async function onFormSubmit(
     {
       method: "POST",
       body: JSON.stringify(parsed.data),
+      headers: {
+        "content-type": "application/json",
+      },
     },
   );
 
@@ -212,7 +224,7 @@ async function onFormSubmit(
       <p class="text-sm text-error">Invalid station</p>
     {/if}
     <button
-      class="absolute right-3 -bottom-4 w-6 flex z-[5] justify-center items-center md:-right-4 md:bottom-0 md:top-0 md:rotate-90"
+      class="absolute right-3 top-7 w-6 flex z-[5] justify-center items-center md:-right-4 md:top-1.5 md:rotate-90"
       type="button"
       onclick={swapStations}
     >
@@ -239,8 +251,10 @@ async function onFormSubmit(
       name="toStation"
       value={toStationSelected?.dataText ?? ""}
     >
-    {#if validationErrors?.toStation && validationErrors.toStation[0]}
-      <p class="text-sm text-error">Invalid station</p>
+    {#if validationErrors?.toStation}
+      {#each validationErrors.toStation as err}
+        <p class="text-sm text-error">{err}</p>
+      {/each}
     {/if}
     <Dropdown
       searchable={toStationSearchable}

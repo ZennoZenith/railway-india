@@ -1,13 +1,14 @@
 <script lang="ts">
 import { applyAction, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
-import { catchError, Debounce } from "$lib";
+import { Debounce, fetchJson, type Superposition } from "$lib";
 import Dropdown from "$lib/components/Dropdown.svelte";
 import { Button } from "$lib/components/ui/button/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
+import type { StationGeneralInfo } from "api-railway/dist/stations";
 import { tick } from "svelte";
 import type { ActionData, SubmitFunction } from "./$types";
 import type { FormError } from "./+page.server";
@@ -37,26 +38,35 @@ function onInputChange(
 }
 
 async function autocomplete() {
-  const response = await catchError(fetch("/api/stations/search", {
-    method: "POST",
-    body: JSON.stringify({ q: formInputValue }),
-    headers: {
-      "content-type": "application/json",
+  const errorJson = await fetchJson<Superposition<{}, StationGeneralInfo[]>>(
+    "/api/stations/search",
+    {
+      method: "POST",
+      body: JSON.stringify({ q: formInputValue }),
+      headers: {
+        "content-type": "application/json",
+      },
     },
-  }));
+  );
 
-  if (response[0]) {
-    console.error(response[0]);
+  if (!errorJson.success) {
+    console.error(errorJson.error);
+    return;
+  }
+  const response = errorJson.data;
+
+  if (!response.success) {
+    list = [];
     return;
   }
 
-  let data = await catchError<DropDownListItem[]>(response[1].json());
-  if (data[0]) {
-    console.error(data[0]);
-    return;
-  }
-
-  list = data[1];
+  list = response.data.map(v => {
+    return {
+      dataText: v.stationCode,
+      text: `(${v.stationCode}) ${v.stationName}`,
+      key: v.id.toString(),
+    } as DropDownListItem;
+  });
 }
 
 function onSelect() {

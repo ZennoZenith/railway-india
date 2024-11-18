@@ -1,11 +1,13 @@
 import type { FormDataValidationError, Superposition } from "$lib";
 import {
   flatten,
+  forward,
   type InferOutput,
   literal,
   nonEmpty,
   object,
   optional,
+  partialCheck,
   pipe,
   safeParse,
   string,
@@ -15,28 +17,38 @@ import {
 } from "valibot";
 
 // const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-const schema = object(
-  {
-    fromStation: pipe(string("fromStation should be string"), trim(), nonEmpty("From station cannot be empty")),
-    toStation: pipe(string("toStation should be string"), trim(), nonEmpty("To station cannot be empty")),
-    allTrains: optional(
-      pipe(
-        string(),
-        trim(),
-        toLowerCase(),
-        union([literal("true"), literal("false")], "invalid allTrains, should be either true or false"),
+const schema = pipe(
+  object(
+    {
+      fromStation: pipe(string("fromStation should be string"), trim(), nonEmpty("From station cannot be empty")),
+      toStation: pipe(string("toStation should be string"), trim(), nonEmpty("To station cannot be empty")),
+      allTrains: optional(
+        pipe(
+          string(),
+          trim(),
+          toLowerCase(),
+          union([literal("true"), literal("false")], "invalid allTrains, should be either true or false"),
+        ),
       ),
-    ),
-    flexible: optional(
-      pipe(
-        string(),
-        trim(),
-        toLowerCase(),
-        union([literal("true"), literal("false")], "invalid allTrains, should be either true or false"),
+      flexible: optional(
+        pipe(
+          string(),
+          trim(),
+          toLowerCase(),
+          union([literal("true"), literal("false")], "invalid allTrains, should be either true or false"),
+        ),
       ),
+      date: optional(pipe(string(), trim())),
+    },
+  ),
+  forward(
+    partialCheck(
+      [["fromStation"], ["toStation"]],
+      (input) => input.fromStation !== input.toStation,
+      "From and To station cannot be equal",
     ),
-    date: optional(pipe(string(), trim())),
-  },
+    ["toStation"],
+  ),
 );
 type Schema = InferOutput<typeof schema>;
 

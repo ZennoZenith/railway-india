@@ -18,6 +18,7 @@ let {
   list,
 }: Props = $props();
 
+// $inspect(list);
 function selectDropdownItem(
   event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement },
 ) {
@@ -31,6 +32,13 @@ function selectDropdownItem(
 
 {#if searchable.showDropdown}
   <div class="absolute w-full left top-10 flex flex-col z-10">
+    {#if list.length === 0}
+      <div
+        class="bg-secondary rounded-sm px-3 overflow-hidden flex items-center hover:bg-zinc-700 h-10 whitespace-nowrap"
+      >
+        No result found
+      </div>
+    {/if}
     {#each list as item (item.key)}
       <button
         class="bg-secondary rounded-sm px-3 overflow-hidden flex items-center hover:bg-zinc-700 h-10 whitespace-nowrap"

@@ -1,52 +1,57 @@
-import { catchError } from "$lib";
+import { catchError, fetchJson, type Superposition } from "$lib";
 import ApiClient from "$lib/server/api";
-import type { DropDownListItem } from "$lib/types";
-import { error, json } from "@sveltejs/kit";
+import { json } from "@sveltejs/kit";
 import type { ApiError } from "api-railway/dist/types";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {
-  const j = await catchError<{ q: string | undefined }>(request.json());
+  const j = await catchError<{ q?: string }>(request.json());
 
   if (j[0]) {
-    error(400, JSON.stringify({ error: "Invalid json" }));
+    return json(
+      {
+        success: false,
+        httpCode: 400,
+        error: { type: "GENERIC", messages: ["Invalid JSON"] },
+      } satisfies Superposition,
+      { status: 400 },
+    );
   }
 
   const { q } = j[1];
 
   if (!q) {
-    error(400, JSON.stringify({ error: "q is empty" }));
+    return json(
+      {
+        success: false,
+        httpCode: 400,
+        error: { type: "VALIDATION", messages: ["Validation error"], data: { q: ["q not provided"] } },
+      } satisfies Superposition<{ q: [string] }>,
+      { status: 400 },
+    );
   }
 
   const { url, method, headers, returnType } = ApiClient.stations.getStationsLikeQuery(q);
 
-  let response = await catchError(fetch(url, {
-    headers,
-    method,
-  }));
+  const reqJson = await fetchJson<typeof returnType | ApiError>(url, { headers, method });
 
-  if (response[0]) {
-    console.error(response[0]);
-    error(500, String(response[0]));
+  if (!reqJson.success) {
+    return json(
+      reqJson satisfies Superposition,
+      { status: reqJson.httpCode },
+    );
   }
 
-  let data = await catchError<typeof returnType | ApiError>(response[1].json());
-  if (data[0]) {
-    console.error(data[0]);
-    error(500, String(data[0]));
+  if ("error" in reqJson.data) {
+    return json(
+      {
+        success: false,
+        httpCode: reqJson.data.httpCode,
+        error: { type: "GENERIC", messages: [reqJson.data.error] },
+      } satisfies Superposition,
+      { status: reqJson.data.httpCode },
+    );
   }
 
-  if (response[1].status > 299) {
-    let err = data[1] as ApiError;
-    error(err.httpCode, JSON.stringify({ error: err.error }));
-  }
-
-  const d: DropDownListItem[] = (data[1] as typeof returnType).map((val) => {
-    return {
-      dataText: val.stationCode,
-      text: `(${val.stationCode}) ${val.stationName} `,
-      key: val.id.toString(),
-    } satisfies DropDownListItem;
-  });
-  return json(d);
+  return json({ success: true, data: reqJson.data } satisfies Superposition);
 };
