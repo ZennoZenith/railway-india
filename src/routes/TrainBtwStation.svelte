@@ -1,8 +1,8 @@
 <script lang="ts">
 import { DurationSecToHM, trainRunningDate, trainRunsOnUtil } from "$lib";
-import LocationPin from "$lib/components/location-pin.svelte";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
 import type { TrainsBetweenStationsTrains } from "api-railway/dist/trainsBtwStations";
+import ScheduleDialog from "./ScheduleDialog.svelte";
 
 type Props = {
   train: TrainsBetweenStationsTrains;
@@ -15,20 +15,12 @@ const { train, fromStation, toStation }: Props = $props();
 
 <section class="border-solid border-2 rounded-xl">
   <div
-    class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground"
+    class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground items-center"
   >
     <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
       {train.trainName} ({train.trainNumber})
     </div>
-    <a
-      class="flex gap-2 whitespace-nowrap"
-      href="/schedules/{train.trainNumber}"
-    >
-      Train Schedule
-      <span class="w-6 whitespace-nowrap">
-        <LocationPin />
-      </span>
-    </a>
+    <ScheduleDialog trainNumber={train.trainNumber} />
   </div>
   <section class="p-2 grid grid-cols-3">
     <div class="font-bold">
