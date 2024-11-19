@@ -2,9 +2,13 @@
 import { DurationSecToHM, trainRunsOnUtil } from "$lib";
 import * as Table from "$lib/components/ui/table/index.js";
 import type { TrainInfo } from "api-railway/dist/types";
-
+import { ExternalLink } from "svelte-radix";
 const { trainInfo }: { trainInfo: TrainInfo } = $props();
 </script>
+
+<a class="flex items-center gap-2" href="/schedules/{trainInfo.trainNumber}">
+  Train Schedule <ExternalLink class="inline" />
+</a>
 
 <Table.Root class="mt-2">
   <Table.Body>
