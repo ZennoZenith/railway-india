@@ -4,6 +4,8 @@ import Dropdown from "$lib/components/Dropdown.svelte";
 import SwapVertical from "$lib/components/swap-vertical-svgrepo-com.svelte";
 import { Button } from "$lib/components/ui/button";
 import { Input } from "$lib/components/ui/input";
+import { Separator } from "$lib/components/ui/separator";
+import { Toggle } from "$lib/components/ui/toggle";
 import { CreateSearchable } from "$lib/search.svelte";
 import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
@@ -20,8 +22,147 @@ import {
   type ValidationError,
 } from "./api/trainsBtwStations/search/schema";
 import DatePicker from "./DatePicker.svelte";
+import FilterCheckbox from "./FilterCheckbox.svelte";
 import TrainBtwStation from "./TrainBtwStation.svelte";
 
+class Filter {
+  readonly journeyClasses = $state(
+    [
+      {
+        id: "journey-class-1A",
+        text: "AC First Class (1A)",
+        data: "1A",
+        checked: true,
+      },
+      {
+        id: "journey-class-2A",
+        text: "AC 2 Tier (2A)",
+        data: "2A",
+        checked: true,
+      },
+      {
+        id: "journey-class-3A",
+        text: "AC 3 Tier (3A)",
+        data: "3A",
+        checked: true,
+      },
+      {
+        id: "journey-class-3E",
+        text: "AC 3 Economy (3E)",
+        data: "3E",
+        checked: true,
+      },
+      {
+        id: "journey-class-SL",
+        text: "Sleeper (SL)",
+        data: "SL",
+        checked: true,
+      },
+      {
+        id: "journey-class-EC",
+        text: "Exec. Chair Car (EC)",
+        data: "EC",
+        checked: true,
+      },
+      {
+        id: "journey-class-CC",
+        text: "AC Chair Car (CC)",
+        data: "CC",
+        checked: true,
+      },
+      {
+        id: "journey-class-2S",
+        text: "Second Sitting (2S)",
+        data: "2S",
+        checked: true,
+      },
+    ],
+  );
+
+  readonly trainTypes = $state(
+    [
+      {
+        id: "train-type-DRNT",
+        text: "Duronto",
+        color: "orange",
+        data: "DRNT",
+        checked: true,
+      },
+      {
+        id: "train-type-GR",
+        text: "Garib Rath",
+        color: "lime",
+        data: "mutedgrey",
+        checked: true,
+      },
+      {
+        id: "train-type-RAJ",
+        text: "Rajdhani",
+        color: "crimson",
+        data: "RAJ",
+        checked: true,
+      },
+      {
+        id: "train-type-SHTB",
+        text: "Shatabdi",
+        color: "dodgerblue",
+        data: "SHTB",
+        checked: true,
+      },
+      {
+        id: "train-type-EXP",
+        text: "Mail/Express",
+        color: "violet",
+        data: "EXP",
+        checked: true,
+      },
+      {
+        id: "train-type-OTHER",
+        text: "Other",
+        color: "dimgray",
+        data: "OTHER",
+        checked: true,
+      },
+    ],
+  );
+
+  readonly departureTimes = $state(
+    [
+      { text: "Early Morning", value: "00:00 - 06:00", checked: true },
+      { text: "Morning", value: "06:00 - 12:00", checked: true },
+      { text: "Mid Day", value: "12:00 - 18:00", checked: true },
+      { text: "Night", value: "18:00 - 24:00", checked: true },
+    ],
+  );
+
+  readonly arrivalTimes = $state(
+    [
+      { text: "Early Morning", value: "00:00 - 06:00", checked: true },
+      { text: "Morning", value: "06:00 - 12:00", checked: true },
+      { text: "Mid Day", value: "12:00 - 18:00", checked: true },
+      { text: "Night", value: "18:00 - 24:00", checked: true },
+    ],
+  );
+
+  selectAll(t: "classes" | "trainTypes" | "departures" | "arrivals") {
+    switch (t) {
+      case "classes":
+        this.journeyClasses.forEach((v) => v.checked = true);
+        break;
+      case "trainTypes":
+        this.trainTypes.forEach((v) => v.checked = true);
+        break;
+      case "departures":
+        this.departureTimes.forEach((v) => v.checked = true);
+        break;
+      case "arrivals":
+        this.arrivalTimes.forEach((v) => v.checked = true);
+        break;
+    }
+  }
+}
+
+const filters = new Filter();
 const todayDate = new Date();
 const debounce = new Debounce();
 const toastState = getToastState();
@@ -329,6 +470,126 @@ async function onFormSubmit(
   >
   <Button type="submit">Search</Button>
 </form>
+
+<!-- Filter section -->
+<section
+  class="mt-4 md:grid grid-cols-2 2xl:grid-cols-1 sm:grid-cols-1 gap-5 overflow-hidden"
+>
+  <div class="flex flex-col gap-2">
+    <Separator />
+    <div class="flex justify-between items-center">
+      <span>JOURNEY CLASS</span>
+      <Button
+        class="h-5 p-2"
+        type="button"
+        onclick={() => {
+          filters.selectAll("classes");
+        }}
+      >
+        Select all
+      </Button>
+    </div>
+    <Separator />
+    <div class="grid grid-cols-2 gap-2">
+      {#each filters.journeyClasses as f, i (f.id)}
+        <FilterCheckbox
+          id={f.id}
+          text={f.text}
+          data={f.data}
+          bind:checked={filters.journeyClasses[i].checked}
+        />
+      {/each}
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <Separator />
+    <div class="flex justify-between items-center">
+      <span>TRAIN TYPE</span>
+      <Button
+        class="h-5 p-2"
+        type="button"
+        onclick={() => {
+          filters.selectAll("trainTypes");
+        }}
+      >
+        Select all
+      </Button>
+    </div>
+    <Separator />
+    <div class="grid grid-cols-1 gap-2">
+      {#each filters.trainTypes as f, i (f.id)}
+        <FilterCheckbox
+          id={f.id}
+          text={f.text}
+          data={f.data}
+          bind:checked={filters.trainTypes[i].checked}
+          color={f.color}
+        />
+      {/each}
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <Separator />
+    <div class="flex justify-between items-center">
+      <span>DEPARTURE TIME</span>
+      <Button
+        class="h-5 p-2"
+        type="button"
+        onclick={() => {
+          filters.selectAll("departures");
+        }}
+      >
+        Select all
+      </Button>
+    </div>
+    <Separator />
+    <div class="grid grid-cols-2 gap-2">
+      {#each filters.departureTimes as f, i (f.value)}
+        <Toggle
+          variant="outline"
+          aria-label={f.value}
+          class="h-16 flex-col hover:bg-inherit"
+          bind:pressed={filters.departureTimes[i].checked}
+        >
+          <span>{f.value}</span>
+          <span>{f.text}</span>
+        </Toggle>
+      {/each}
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <Separator />
+    <div class="flex justify-between items-center">
+      <span>ARRIVAL TIME</span>
+      <Button
+        class="h-5 p-2"
+        type="button"
+        onclick={() => {
+          filters.selectAll("arrivals");
+        }}
+      >
+        Select all
+      </Button>
+    </div>
+    <Separator />
+    <div class="grid grid-cols-2 gap-2">
+      {#each filters.arrivalTimes as f, i (f.value)}
+        <Toggle
+          variant="outline"
+          aria-label={f.value}
+          class="h-16 flex-col hover:bg-inherit"
+          bind:pressed={filters.arrivalTimes[i].checked}
+        >
+          <span>{f.value}</span>
+          <span>{f.text}</span>
+        </Toggle>
+      {/each}
+    </div>
+  </div>
+</section>
 
 <section class="flex flex-col gap-4 mt-4">
   {#if trainsOnDate}
