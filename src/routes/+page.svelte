@@ -1,5 +1,10 @@
 <script lang="ts">
-import { Debounce, fetchJson, type Superposition } from "$lib";
+import {
+  Debounce,
+  fetchJson,
+  type Superposition,
+  trainTimeToSeconds,
+} from "$lib";
 import Dropdown from "$lib/components/Dropdown.svelte";
 import SwapVertical from "$lib/components/swap-vertical-svgrepo-com.svelte";
 import { Button } from "$lib/components/ui/button";
@@ -15,7 +20,11 @@ import {
   type DateValue,
 } from "@internationalized/date";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
-import type { TrainsBetweenStations } from "api-railway/dist/trainsBtwStations";
+import type {
+  TrainsBetweenStations,
+  TrainsBetweenStationsTrains,
+} from "api-railway/dist/trainsBtwStations";
+import type { TrainClassTypeXX } from "api-railway/dist/types";
 import { untrack } from "svelte";
 import {
   validateSchema,
@@ -26,7 +35,12 @@ import FilterCheckbox from "./FilterCheckbox.svelte";
 import TrainBtwStation from "./TrainBtwStation.svelte";
 
 class Filter {
-  readonly journeyClasses = $state(
+  readonly journeyClasses: {
+    id: string;
+    text: string;
+    data: TrainClassTypeXX | "OTHER";
+    checked: boolean;
+  }[] = $state(
     [
       {
         id: "journey-class-1A",
@@ -74,6 +88,18 @@ class Filter {
         id: "journey-class-2S",
         text: "Second Sitting (2S)",
         data: "2S",
+        checked: true,
+      },
+      {
+        id: "journey-class-GN",
+        text: "General (GN)",
+        data: "GN",
+        checked: true,
+      },
+      {
+        id: "journey-class-OTHER",
+        text: "Others",
+        data: "OTHER",
         checked: true,
       },
     ],
@@ -128,21 +154,92 @@ class Filter {
 
   readonly departureTimes = $state(
     [
-      { text: "Early Morning", value: "00:00 - 06:00", checked: true },
-      { text: "Morning", value: "06:00 - 12:00", checked: true },
-      { text: "Mid Day", value: "12:00 - 18:00", checked: true },
-      { text: "Night", value: "18:00 - 24:00", checked: true },
+      {
+        text: "Early Morning",
+        value: "00:00 - 06:00",
+        checked: true,
+        startTime: 0,
+        endTime: trainTimeToSeconds("5:59:59"),
+      },
+      {
+        text: "Morning",
+        value: "06:00 - 12:00",
+        checked: true,
+        startTime: trainTimeToSeconds("06:00"),
+        endTime: trainTimeToSeconds("11:59:59"),
+      },
+      {
+        text: "Mid Day",
+        value: "12:00 - 18:00",
+        checked: true,
+        startTime: trainTimeToSeconds("12:00"),
+        endTime: trainTimeToSeconds("17:59:59"),
+      },
+      {
+        text: "Night",
+        value: "18:00 - 24:00",
+        checked: true,
+        startTime: trainTimeToSeconds("18:00"),
+        endTime: trainTimeToSeconds("23:59:59"),
+      },
     ],
   );
 
   readonly arrivalTimes = $state(
     [
-      { text: "Early Morning", value: "00:00 - 06:00", checked: true },
-      { text: "Morning", value: "06:00 - 12:00", checked: true },
-      { text: "Mid Day", value: "12:00 - 18:00", checked: true },
-      { text: "Night", value: "18:00 - 24:00", checked: true },
+      {
+        text: "Early Morning",
+        value: "00:00 - 06:00",
+        checked: true,
+        startTime: 0,
+        endTime: trainTimeToSeconds("5:59:59"),
+      },
+      {
+        text: "Morning",
+        value: "06:00 - 12:00",
+        checked: true,
+        startTime: trainTimeToSeconds("06:00"),
+        endTime: trainTimeToSeconds("11:59:59"),
+      },
+      {
+        text: "Mid Day",
+        value: "12:00 - 18:00",
+        checked: true,
+        startTime: trainTimeToSeconds("12:00"),
+        endTime: trainTimeToSeconds("17:59:59"),
+      },
+      {
+        text: "Night",
+        value: "18:00 - 24:00",
+        checked: true,
+        startTime: trainTimeToSeconds("18:00"),
+        endTime: trainTimeToSeconds("23:59:59"),
+      },
     ],
   );
+
+  private trainOnDate: TrainsBetweenStationsTrains[] = [];
+  private trainsOnAlternateDate: TrainsBetweenStationsTrains[] = [];
+
+  filteredTrainOnDate: TrainsBetweenStationsTrains[] = $state([]);
+  filteredTrainsOnAlternateDate: TrainsBetweenStationsTrains[] = $state([]);
+
+  private readonly INDEX_OF_OTHER_CLASS: number;
+  private readonly INDEX_OF_OTHER_TRAIN_TYPE: number;
+  constructor() {
+    const i = this.journeyClasses.findIndex(v => v.data === "OTHER");
+    if (i === -1) {
+      throw new Error("No class filter found with value OTHER");
+    }
+
+    const j = this.trainTypes.findIndex(v => v.data === "OTHER");
+    if (i === -1) {
+      throw new Error("No train type filter found with value OTHER");
+    }
+
+    this.INDEX_OF_OTHER_CLASS = i;
+    this.INDEX_OF_OTHER_TRAIN_TYPE = j;
+  }
 
   selectAll(t: "classes" | "trainTypes" | "departures" | "arrivals") {
     switch (t) {
@@ -159,8 +256,152 @@ class Filter {
         this.arrivalTimes.forEach((v) => v.checked = true);
         break;
     }
+    this.filter();
+  }
+
+  setTrains(trains?: TrainsBetweenStations) {
+    if (!trains) {
+      this.trainOnDate = [];
+      this.trainsOnAlternateDate = [];
+      return;
+    }
+    this.trainOnDate = trains.trainsOnDate;
+    this.trainsOnAlternateDate = trains.trainsOnAlternateDate;
+    this.filter();
+  }
+
+  private readonly filterClasses = (v: TrainsBetweenStationsTrains) => {
+    let allChecked = true;
+    for (const c of this.journeyClasses) {
+      if (!c.checked) {
+        allChecked = false;
+      }
+
+      if (
+        c.checked && v.availableClasses.includes(c.data as TrainClassTypeXX)
+      ) {
+        return true;
+      }
+    }
+
+    if (allChecked) {
+      return true;
+    }
+
+    if (
+      this.journeyClasses[this.INDEX_OF_OTHER_CLASS]
+      && this.journeyClasses[this.INDEX_OF_OTHER_CLASS].checked
+    ) {
+      for (const c of this.journeyClasses) {
+        if (
+          v.availableClasses.includes(c.data as TrainClassTypeXX)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  };
+
+  private readonly filterTrainTypes = (v: TrainsBetweenStationsTrains) => {
+    let allChecked = true;
+
+    for (const c of this.trainTypes) {
+      if (!c.checked) {
+        allChecked = false;
+      }
+      if (c.checked && v.trainTypeCode === c.data) {
+        return true;
+      }
+    }
+
+    if (allChecked) {
+      return true;
+    }
+
+    if (
+      this.trainTypes[this.INDEX_OF_OTHER_TRAIN_TYPE]
+      && this.trainTypes[this.INDEX_OF_OTHER_TRAIN_TYPE].checked
+    ) {
+      for (const c of this.trainTypes) {
+        if (v.trainTypeCode === c.data) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  };
+
+  private readonly filterDepartureTime = (v: TrainsBetweenStationsTrains) => {
+    let allChecked = true;
+
+    for (const c of this.departureTimes) {
+      if (!c.checked) {
+        allChecked = false;
+      }
+      const time = trainTimeToSeconds(v.stationFrom.departureTime);
+      if (c.checked && time >= c.startTime && time < c.endTime) {
+        return true;
+      }
+    }
+
+    if (allChecked) {
+      return true;
+    }
+
+    return false;
+  };
+
+  private readonly filterArrivalTime = (v: TrainsBetweenStationsTrains) => {
+    let allChecked = true;
+
+    for (const c of this.arrivalTimes) {
+      if (!c.checked) {
+        allChecked = false;
+      }
+      const time = trainTimeToSeconds(v.stationTo.arrivalTime);
+      if (c.checked && time >= c.startTime && time < c.endTime) {
+        return true;
+      }
+    }
+    if (allChecked) {
+      return true;
+    }
+
+    return false;
+  };
+
+  filter() {
+    this.filteredTrainOnDate = this.trainOnDate
+      .filter(this.filterClasses)
+      .filter(this.filterTrainTypes)
+      .filter(this.filterDepartureTime)
+      .filter(this.filterArrivalTime);
+
+    this.filteredTrainsOnAlternateDate = this.trainsOnAlternateDate
+      .filter(this.filterClasses)
+      .filter(this.filterTrainTypes)
+      .filter(this.filterDepartureTime)
+      .filter(this.filterArrivalTime);
+  }
+
+  clear() {
+    this.trainOnDate = [];
+    this.trainsOnAlternateDate = [];
+    this.filteredTrainOnDate = [];
+    this.filteredTrainsOnAlternateDate = [];
   }
 }
+
+$effect(() => {
+  filters.journeyClasses;
+  filters.trainTypes;
+  filters.departureTimes;
+  filters.arrivalTimes;
+  filters.filter();
+});
 
 const filters = new Filter();
 const todayDate = new Date();
@@ -192,15 +433,11 @@ let lastSelectedDate = $state<string>("2002-03-19");
 
 let response = $state<Superposition<ValidationError, TrainsBetweenStations>>();
 
-let trainsOnDate = $derived.by(() => {
+$effect(() => {
   if (response?.success) {
-    return response.data.trainsOnDate;
-  }
-});
-
-let trainsOnAlternateDate = $derived.by(() => {
-  if (response?.success) {
-    return response.data.trainsOnAlternateDate;
+    filters.setTrains(response.data);
+  } else {
+    filters.clear();
   }
 });
 
@@ -592,9 +829,9 @@ async function onFormSubmit(
 </section>
 
 <section class="flex flex-col gap-4 mt-4">
-  {#if trainsOnDate}
+  {#if filters.filteredTrainOnDate.length > 0}
     <section class="border-solid border-2 rounded-md p-2">
-      {trainsOnDate?.length} results |
+      {filters.filteredTrainOnDate.length} results |
       <span class="text-nowrap">
         {lastSelectedFromStation?.stationName}
         &rightarrow;
@@ -604,7 +841,7 @@ async function onFormSubmit(
     </section>
 
     <section class="flex flex-col gap-2">
-      {#each trainsOnDate as train (train.trainId)}
+      {#each filters.filteredTrainOnDate as train (train.trainId)}
         <TrainBtwStation
           {train}
           fromStation={stationIdMap.get(train.stationFrom.stationId)}
@@ -615,13 +852,14 @@ async function onFormSubmit(
   {/if}
 
   <!-- ------------------------  -->
-  {#if trainsOnAlternateDate && trainsOnAlternateDate.length > 0}
+  {#if filters.filteredTrainsOnAlternateDate
+    && filters.filteredTrainsOnAlternateDate.length > 0}
     <div class="py-4 px-4 bg-info text-info-foreground rounded-md">
       Train on alternate days
     </div>
 
     <section class="border-solid border-2 rounded-md p-2">
-      {trainsOnAlternateDate?.length} results |
+      {filters.filteredTrainsOnAlternateDate.length} results |
       <span class="text-nowrap">
         {lastSelectedFromStation?.stationName}
         &rightarrow;
@@ -631,7 +869,7 @@ async function onFormSubmit(
     </section>
 
     <section class="flex flex-col gap-2">
-      {#each trainsOnAlternateDate as train (train.trainId)}
+      {#each filters.filteredTrainsOnAlternateDate as train (train.trainId)}
         <TrainBtwStation
           {train}
           fromStation={stationIdMap.get(train.stationFrom.stationId)}

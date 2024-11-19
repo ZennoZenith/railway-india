@@ -161,3 +161,17 @@ export function trainRunningDate(dayCount: number = 1, showYear: boolean = false
   const d = newDate.toDateString().split(" "); // 'Tue Nov 12 2024'
   return `${d[0]}, ${d[2]} ${d[1]} ${showYear ? d[3] : ""}`;
 }
+
+export function trainTimeToSeconds(timeStr: `${string}:${string}:${string}` | `${string}:${string}`) {
+  const t = timeStr.split(":");
+  const hour = t[0];
+  const minute = t[1];
+  const second = t[2];
+  let time = 0;
+  if (second) {
+    time += parseInt(second);
+  }
+  time += parseInt(minute) * 60;
+  time += parseInt(hour) * 60 * 60;
+  return time;
+}

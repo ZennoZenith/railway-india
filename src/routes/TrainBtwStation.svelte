@@ -1,5 +1,6 @@
 <script lang="ts">
 import { DurationSecToHM, trainRunningDate, trainRunsOnUtil } from "$lib";
+import { Separator } from "$lib/components/ui/separator";
 import type { StationGeneralInfo } from "api-railway/dist/stations";
 import type { TrainsBetweenStationsTrains } from "api-railway/dist/trainsBtwStations";
 import ScheduleDialog from "./ScheduleDialog.svelte";
@@ -26,8 +27,10 @@ const { train, fromStation, toStation }: Props = $props();
     <div class="font-bold">
       {train.stationFrom.departureTime?.slice(0, 5)}
     </div>
-    <div class="flex justify-center">
+    <div class="flex justify-center items-center text-nowrap">
+      <Separator class="w-8 mr-2" />
       {DurationSecToHM(train.durationSec)}
+      <Separator class="w-8 ml-2" />
     </div>
     <div class="flex justify-end font-bold">
       {train.stationTo.arrivalTime?.slice(0, 5)}
