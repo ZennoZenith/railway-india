@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
   const { url, method, headers, returnType } = ApiClient.stations.getStationsLikeQuery(q);
 
-  let response = await catchError(fetch(url, {
+  const response = await catchError(fetch(url, {
     headers,
     method,
   }));
@@ -30,14 +30,14 @@ export const POST: RequestHandler = async ({ request }) => {
     error(500, String(response[0]));
   }
 
-  let data = await catchError<typeof returnType | ApiError>(response[1].json());
+  const data = await catchError<typeof returnType | ApiError>(response[1].json());
   if (data[0]) {
     console.error(data[0]);
     error(500, String(data[0]));
   }
 
   if (response[1].status > 299) {
-    let err = data[1] as ApiError;
+    const err = data[1] as ApiError;
     error(err.httpCode, JSON.stringify({ error: err.error }));
   }
 

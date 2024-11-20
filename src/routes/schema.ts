@@ -34,7 +34,7 @@ export type FormValidation = {
 };
 
 export function parse(value: unknown): FormValidation {
-  let results = safeParse(schema, value);
+  const results = safeParse(schema, value);
 
   if (results.success) {
     return createSuccessRet(results.output);

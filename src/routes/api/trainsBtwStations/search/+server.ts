@@ -19,7 +19,7 @@ export const POST: RequestHandler = async ({ request }) => {
     );
   }
 
-  let reqData = validateSchema(j[1]);
+  const reqData = validateSchema(j[1]);
   if (!reqData.success) {
     return json(
       reqData satisfies Superposition,
