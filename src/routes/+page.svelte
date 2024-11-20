@@ -26,6 +26,7 @@ import type {
 } from "api-railway/dist/trainsBtwStations";
 import type { TrainClassTypeXX } from "api-railway/dist/types";
 import { untrack } from "svelte";
+import { CaretDown, CaretUp } from "svelte-radix";
 import {
   validateSchema,
   type ValidationError,
@@ -218,6 +219,8 @@ class Filter {
     ],
   );
 
+  filterOpenState = $state(false);
+
   private trainOnDate: TrainsBetweenStationsTrains[] = [];
   private trainsOnAlternateDate: TrainsBetweenStationsTrains[] = [];
 
@@ -393,6 +396,21 @@ class Filter {
     this.filteredTrainOnDate = [];
     this.filteredTrainsOnAlternateDate = [];
   }
+
+  toggleFilter(value?: boolean) {
+    if (value !== undefined) {
+      this.filterOpenState = value;
+    } else {
+      this.filterOpenState = !this.filterOpenState;
+    }
+  }
+
+  reset() {
+    this.journeyClasses.forEach(v => v.checked = true);
+    this.trainTypes.forEach(v => v.checked = true);
+    this.departureTimes.forEach(v => v.checked = true);
+    this.arrivalTimes.forEach(v => v.checked = true);
+  }
 }
 
 $effect(() => {
@@ -412,6 +430,7 @@ const toStationSearchable = new CreateSearchable(100);
 const stationIdMap = new Map<number, StationGeneralInfo>();
 const df = new DateFormatter("en-US", { dateStyle: "full" });
 
+// let filterSectionRef = $state<HTMLElement | null>(null);
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
 let fromStationInputValue: string = $state("");
@@ -708,126 +727,147 @@ async function onFormSubmit(
   <Button type="submit">Search</Button>
 </form>
 
-<!-- Filter section -->
-<section
-  class="mt-4 md:grid grid-cols-2 2xl:grid-cols-1 sm:grid-cols-1 gap-5 overflow-hidden"
+<div
+  class="filter-section transition-all py-4"
+  class:filter-is-open={filters.filterOpenState}
 >
-  <div class="flex flex-col gap-2">
-    <Separator />
-    <div class="flex justify-between items-center">
-      <span>JOURNEY CLASS</span>
-      <Button
-        class="h-5 p-2"
-        type="button"
-        onclick={() => {
-          filters.selectAll("classes");
-        }}
-      >
-        Select all
-      </Button>
-    </div>
-    <Separator />
-    <div class="grid grid-cols-2 gap-2">
-      {#each filters.journeyClasses as f, i (f.id)}
-        <FilterCheckbox
-          id={f.id}
-          text={f.text}
-          data={f.data}
-          bind:checked={filters.journeyClasses[i].checked}
-        />
-      {/each}
-    </div>
+  <div class="flex justify-between">
+    <Button variant="outline" onclick={() => filters.toggleFilter()}>
+      {#if filters.filterOpenState}
+        Hide filters <CaretUp />
+      {:else}
+        Show filters <CaretDown />
+      {/if}
+    </Button>
+    <Button variant="outline" onclick={() => filters.reset()}>
+      Reset filters
+    </Button>
   </div>
 
-  <div class="flex flex-col gap-2">
-    <Separator />
-    <div class="flex justify-between items-center">
-      <span>TRAIN TYPE</span>
-      <Button
-        class="h-5 p-2"
-        type="button"
-        onclick={() => {
-          filters.selectAll("trainTypes");
-        }}
-      >
-        Select all
-      </Button>
-    </div>
-    <Separator />
-    <div class="grid grid-cols-1 gap-2">
-      {#each filters.trainTypes as f, i (f.id)}
-        <FilterCheckbox
-          id={f.id}
-          text={f.text}
-          data={f.data}
-          bind:checked={filters.trainTypes[i].checked}
-          color={f.color}
-        />
-      {/each}
-    </div>
-  </div>
-
-  <div class="flex flex-col gap-2">
-    <Separator />
-    <div class="flex justify-between items-center">
-      <span>DEPARTURE TIME</span>
-      <Button
-        class="h-5 p-2"
-        type="button"
-        onclick={() => {
-          filters.selectAll("departures");
-        }}
-      >
-        Select all
-      </Button>
-    </div>
-    <Separator />
-    <div class="grid grid-cols-2 gap-2">
-      {#each filters.departureTimes as f, i (f.value)}
-        <Toggle
-          variant="outline"
-          aria-label={f.value}
-          class="h-16 flex-col hover:bg-inherit"
-          bind:pressed={filters.departureTimes[i].checked}
+  <!-- Filter section -->
+  <!-- 
+    style="visibility: {filters.filterOpenState ? `visible` : `hidden`};"
+   -->
+  <div
+    aria-expanded={filters.filterOpenState}
+    class="mt-4 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-1 gap-5 overflow-hidden"
+  >
+    <div class="flex flex-col gap-2">
+      <Separator />
+      <div class="flex justify-between items-center">
+        <span>JOURNEY CLASS</span>
+        <Button
+          class="h-5 p-2"
+          type="button"
+          onclick={() => {
+            filters.selectAll("classes");
+          }}
         >
-          <span>{f.value}</span>
-          <span>{f.text}</span>
-        </Toggle>
-      {/each}
+          Select all
+        </Button>
+      </div>
+      <Separator />
+      <div class="grid grid-cols-2 gap-2">
+        {#each filters.journeyClasses as f, i (f.id)}
+          <FilterCheckbox
+            id={f.id}
+            text={f.text}
+            data={f.data}
+            bind:checked={filters.journeyClasses[i].checked}
+          />
+        {/each}
+      </div>
     </div>
-  </div>
 
-  <div class="flex flex-col gap-2">
-    <Separator />
-    <div class="flex justify-between items-center">
-      <span>ARRIVAL TIME</span>
-      <Button
-        class="h-5 p-2"
-        type="button"
-        onclick={() => {
-          filters.selectAll("arrivals");
-        }}
-      >
-        Select all
-      </Button>
-    </div>
-    <Separator />
-    <div class="grid grid-cols-2 gap-2">
-      {#each filters.arrivalTimes as f, i (f.value)}
-        <Toggle
-          variant="outline"
-          aria-label={f.value}
-          class="h-16 flex-col hover:bg-inherit"
-          bind:pressed={filters.arrivalTimes[i].checked}
+    <div class="flex flex-col gap-2">
+      <Separator />
+      <div class="flex justify-between items-center">
+        <span>TRAIN TYPE</span>
+        <Button
+          class="h-5 p-2"
+          type="button"
+          onclick={() => {
+            filters.selectAll("trainTypes");
+          }}
         >
-          <span>{f.value}</span>
-          <span>{f.text}</span>
-        </Toggle>
-      {/each}
+          Select all
+        </Button>
+      </div>
+      <Separator />
+      <div class="grid grid-cols-1 gap-2">
+        {#each filters.trainTypes as f, i (f.id)}
+          <FilterCheckbox
+            id={f.id}
+            text={f.text}
+            data={f.data}
+            bind:checked={filters.trainTypes[i].checked}
+            color={f.color}
+          />
+        {/each}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <Separator />
+      <div class="flex justify-between items-center">
+        <span>DEPARTURE TIME</span>
+        <Button
+          class="h-5 p-2"
+          type="button"
+          onclick={() => {
+            filters.selectAll("departures");
+          }}
+        >
+          Select all
+        </Button>
+      </div>
+      <Separator />
+      <div class="grid grid-cols-2 gap-2">
+        {#each filters.departureTimes as f, i (f.value)}
+          <Toggle
+            variant="outline"
+            aria-label={f.value}
+            class="h-16 flex-col hover:bg-inherit"
+            bind:pressed={filters.departureTimes[i].checked}
+          >
+            <span>{f.value}</span>
+            <span>{f.text}</span>
+          </Toggle>
+        {/each}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <Separator />
+      <div class="flex justify-between items-center">
+        <span>ARRIVAL TIME</span>
+        <Button
+          class="h-5 p-2"
+          type="button"
+          onclick={() => {
+            filters.selectAll("arrivals");
+          }}
+        >
+          Select all
+        </Button>
+      </div>
+      <Separator />
+      <div class="grid grid-cols-2 gap-2">
+        {#each filters.arrivalTimes as f, i (f.value)}
+          <Toggle
+            variant="outline"
+            aria-label={f.value}
+            class="h-16 flex-col hover:bg-inherit"
+            bind:pressed={filters.arrivalTimes[i].checked}
+          >
+            <span>{f.value}</span>
+            <span>{f.text}</span>
+          </Toggle>
+        {/each}
+      </div>
     </div>
   </div>
-</section>
-
+</div>
 <section class="flex flex-col gap-4 mt-4">
   {#if filters.filteredTrainOnDate.length > 0}
     <section class="border-solid border-2 rounded-md p-2">
@@ -879,3 +919,19 @@ async function onFormSubmit(
     </section>
   {/if}
 </section>
+
+<style>
+.filter-section {
+  display: grid;
+  grid-template-rows: auto 0fr;
+}
+
+.filter-section.filter-is-open {
+  grid-template-rows: auto 1fr;
+}
+
+/* :global(.filter-section[aria-expended="true"]) {
+  grid-template-rows: auto 0fr;
+  grid-template-rows: auto 1fr;
+} */
+</style>
