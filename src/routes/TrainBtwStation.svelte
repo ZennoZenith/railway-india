@@ -12,11 +12,21 @@ type Props = {
 };
 
 const { train, fromStation, toStation }: Props = $props();
+
+const colorMap = new Map([
+  ["DRNT", "orange"],
+  ["mutedgrey", "lime"],
+  ["RAJ", "crimson"],
+  ["SHTB", "dodgerblue"],
+  ["EXP", "violet"],
+  ["OTHER", "dimgray"],
+]);
 </script>
 
 <section class="border-solid border-2 rounded-xl">
   <div
-    class="p-2 flex justify-between rounded-t-xl font-bold bg-muted text-muted-forground items-center"
+    class="p-2 flex justify-between rounded-t-xl font-bold items-center text-primary"
+    style={`background-color: ${colorMap.get(train.trainTypeCode) ?? "dimgray"}`}
   >
     <div class="whitespace-nowrap overflow-hidden overflow-ellipsis">
       {train.trainName} ({train.trainNumber})
