@@ -1,4 +1,5 @@
 <script lang="ts">
+import { browser } from "$app/environment";
 import {
   Debounce,
   fetchJson,
@@ -230,6 +231,10 @@ class Filter {
   private readonly INDEX_OF_OTHER_CLASS: number;
   private readonly INDEX_OF_OTHER_TRAIN_TYPE: number;
   constructor() {
+    if (browser && window.innerWidth >= 1536) {
+      this.filterOpenState = true;
+    }
+
     const i = this.journeyClasses.findIndex(v => v.data === "OTHER");
     if (i === -1) {
       throw new Error("No class filter found with value OTHER");
@@ -636,7 +641,7 @@ async function onFormSubmit(
 </script>
 
 <form
-  class="grid grid-cols-1 md:grid-cols-4 gap-2"
+  class="grid grid-cols-1 md:grid-cols-4 gap-2 max-w-[960px] mx-auto"
   onsubmit={onFormSubmit}
 >
   <div
@@ -727,200 +732,209 @@ async function onFormSubmit(
   <Button type="submit">Search</Button>
 </form>
 
-<div
-  class="filter-section transition-all py-4"
-  class:filter-is-open={filters.filterOpenState}
->
-  <div class="flex justify-between">
-    <Button variant="outline" onclick={() => filters.toggleFilter()}>
-      {#if filters.filterOpenState}
-        Hide filters <CaretUp />
-      {:else}
-        Show filters <CaretDown />
-      {/if}
-    </Button>
-    <Button variant="outline" onclick={() => filters.reset()}>
-      Reset filters
-    </Button>
-  </div>
+<section class="main-section grid gap-4 py-4">
+  <div
+    class="filter-section transition-all"
+    class:filter-is-open={filters.filterOpenState}
+  >
+    <div class="flex justify-between">
+      <Button variant="outline" onclick={() => filters.toggleFilter()}>
+        {#if filters.filterOpenState}
+          Hide filters <CaretUp />
+        {:else}
+          Show filters <CaretDown />
+        {/if}
+      </Button>
+      <Button variant="outline" onclick={() => filters.reset()}>
+        Reset filters
+      </Button>
+    </div>
 
-  <!-- Filter section -->
-  <!-- 
+    <!-- Filter section -->
+    <!-- 
     style="visibility: {filters.filterOpenState ? `visible` : `hidden`};"
    -->
-  <div
-    aria-expanded={filters.filterOpenState}
-    class="mt-4 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-1 gap-5 overflow-hidden"
-  >
-    <div class="flex flex-col gap-2">
-      <Separator />
-      <div class="flex justify-between items-center">
-        <span>JOURNEY CLASS</span>
-        <Button
-          class="h-5 p-2"
-          type="button"
-          onclick={() => {
-            filters.selectAll("classes");
-          }}
-        >
-          Select all
-        </Button>
-      </div>
-      <Separator />
-      <div class="grid grid-cols-2 gap-2">
-        {#each filters.journeyClasses as f, i (f.id)}
-          <FilterCheckbox
-            id={f.id}
-            text={f.text}
-            data={f.data}
-            bind:checked={filters.journeyClasses[i].checked}
-          />
-        {/each}
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <Separator />
-      <div class="flex justify-between items-center">
-        <span>TRAIN TYPE</span>
-        <Button
-          class="h-5 p-2"
-          type="button"
-          onclick={() => {
-            filters.selectAll("trainTypes");
-          }}
-        >
-          Select all
-        </Button>
-      </div>
-      <Separator />
-      <div class="grid grid-cols-1 gap-2">
-        {#each filters.trainTypes as f, i (f.id)}
-          <FilterCheckbox
-            id={f.id}
-            text={f.text}
-            data={f.data}
-            bind:checked={filters.trainTypes[i].checked}
-            color={f.color}
-          />
-        {/each}
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <Separator />
-      <div class="flex justify-between items-center">
-        <span>DEPARTURE TIME</span>
-        <Button
-          class="h-5 p-2"
-          type="button"
-          onclick={() => {
-            filters.selectAll("departures");
-          }}
-        >
-          Select all
-        </Button>
-      </div>
-      <Separator />
-      <div class="grid grid-cols-2 gap-2">
-        {#each filters.departureTimes as f, i (f.value)}
-          <Toggle
-            variant="outline"
-            aria-label={f.value}
-            class="h-16 flex-col hover:bg-inherit"
-            bind:pressed={filters.departureTimes[i].checked}
+    <div
+      aria-expanded={filters.filterOpenState}
+      class="mt-4 grid grid-cols-1 md:grid-cols-2 2xl:flex 2xl:flex-col gap-5 overflow-hidden"
+    >
+      <div class="flex flex-col gap-2">
+        <Separator />
+        <div class="flex justify-between items-center">
+          <span>JOURNEY CLASS</span>
+          <Button
+            class="h-5 p-2"
+            type="button"
+            onclick={() => {
+              filters.selectAll("classes");
+            }}
           >
-            <span>{f.value}</span>
-            <span>{f.text}</span>
-          </Toggle>
-        {/each}
+            Select all
+          </Button>
+        </div>
+        <Separator />
+        <div class="grid grid-cols-2 gap-2">
+          {#each filters.journeyClasses as f, i (f.id)}
+            <FilterCheckbox
+              id={f.id}
+              text={f.text}
+              data={f.data}
+              bind:checked={filters.journeyClasses[i].checked}
+            />
+          {/each}
+        </div>
       </div>
-    </div>
 
-    <div class="flex flex-col gap-2">
-      <Separator />
-      <div class="flex justify-between items-center">
-        <span>ARRIVAL TIME</span>
-        <Button
-          class="h-5 p-2"
-          type="button"
-          onclick={() => {
-            filters.selectAll("arrivals");
-          }}
-        >
-          Select all
-        </Button>
-      </div>
-      <Separator />
-      <div class="grid grid-cols-2 gap-2">
-        {#each filters.arrivalTimes as f, i (f.value)}
-          <Toggle
-            variant="outline"
-            aria-label={f.value}
-            class="h-16 flex-col hover:bg-inherit"
-            bind:pressed={filters.arrivalTimes[i].checked}
+      <div class="flex flex-col gap-2">
+        <Separator />
+        <div class="flex justify-between items-center">
+          <span>TRAIN TYPE</span>
+          <Button
+            class="h-5 p-2"
+            type="button"
+            onclick={() => {
+              filters.selectAll("trainTypes");
+            }}
           >
-            <span>{f.value}</span>
-            <span>{f.text}</span>
-          </Toggle>
-        {/each}
+            Select all
+          </Button>
+        </div>
+        <Separator />
+        <div class="grid grid-cols-1 gap-2">
+          {#each filters.trainTypes as f, i (f.id)}
+            <FilterCheckbox
+              id={f.id}
+              text={f.text}
+              data={f.data}
+              bind:checked={filters.trainTypes[i].checked}
+              color={f.color}
+            />
+          {/each}
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <Separator />
+        <div class="flex justify-between items-center">
+          <span>DEPARTURE TIME</span>
+          <Button
+            class="h-5 p-2"
+            type="button"
+            onclick={() => {
+              filters.selectAll("departures");
+            }}
+          >
+            Select all
+          </Button>
+        </div>
+        <Separator />
+        <div class="grid grid-cols-2 gap-2">
+          {#each filters.departureTimes as f, i (f.value)}
+            <Toggle
+              variant="outline"
+              aria-label={f.value}
+              class="h-16 flex-col hover:bg-inherit"
+              bind:pressed={filters.departureTimes[i].checked}
+            >
+              <span>{f.value}</span>
+              <span>{f.text}</span>
+            </Toggle>
+          {/each}
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <Separator />
+        <div class="flex justify-between items-center">
+          <span>ARRIVAL TIME</span>
+          <Button
+            class="h-5 p-2"
+            type="button"
+            onclick={() => {
+              filters.selectAll("arrivals");
+            }}
+          >
+            Select all
+          </Button>
+        </div>
+        <Separator />
+        <div class="grid grid-cols-2 gap-2">
+          {#each filters.arrivalTimes as f, i (f.value)}
+            <Toggle
+              variant="outline"
+              aria-label={f.value}
+              class="h-16 flex-col hover:bg-inherit"
+              bind:pressed={filters.arrivalTimes[i].checked}
+            >
+              <span>{f.value}</span>
+              <span>{f.text}</span>
+            </Toggle>
+          {/each}
+        </div>
       </div>
     </div>
   </div>
-</div>
-<section class="flex flex-col gap-4 mt-4">
-  {#if filters.filteredTrainOnDate.length > 0}
-    <section class="border-solid border-2 rounded-md p-2">
-      {filters.filteredTrainOnDate.length} results |
-      <span class="text-nowrap">
-        {lastSelectedFromStation?.stationName}
-        &rightarrow;
-        {lastSelectedToStation?.stationName}
-      </span>
-      | {df.format(new Date(lastSelectedDate))}
-    </section>
+  <section class="flex flex-col gap-4 mt-4">
+    {#if filters.filteredTrainOnDate.length > 0}
+      <section class="border-solid border-2 rounded-md p-2">
+        {filters.filteredTrainOnDate.length} results |
+        <span class="text-nowrap">
+          {lastSelectedFromStation?.stationName}
+          &rightarrow;
+          {lastSelectedToStation?.stationName}
+        </span>
+        | {df.format(new Date(lastSelectedDate))}
+      </section>
 
-    <section class="flex flex-col gap-2">
-      {#each filters.filteredTrainOnDate as train (train.trainId)}
-        <TrainBtwStation
-          {train}
-          fromStation={stationIdMap.get(train.stationFrom.stationId)}
-          toStation={stationIdMap.get(train.stationTo.stationId)}
-        />
-      {/each}
-    </section>
-  {/if}
+      <section class="flex flex-col gap-2">
+        {#each filters.filteredTrainOnDate as train (train.trainId)}
+          <TrainBtwStation
+            {train}
+            fromStation={stationIdMap.get(train.stationFrom.stationId)}
+            toStation={stationIdMap.get(train.stationTo.stationId)}
+          />
+        {/each}
+      </section>
+    {/if}
 
-  <!-- ------------------------  -->
-  {#if filters.filteredTrainsOnAlternateDate
-    && filters.filteredTrainsOnAlternateDate.length > 0}
-    <div class="py-4 px-4 bg-info text-info-foreground rounded-md">
-      Train on alternate days
-    </div>
+    <!-- ------------------------  -->
+    {#if filters.filteredTrainsOnAlternateDate.length > 0}
+      {#if filters.filteredTrainOnDate.length !== 0}
+        <Separator class="my-14" />
+      {/if}
 
-    <section class="border-solid border-2 rounded-md p-2">
-      {filters.filteredTrainsOnAlternateDate.length} results |
-      <span class="text-nowrap">
-        {lastSelectedFromStation?.stationName}
-        &rightarrow;
-        {lastSelectedToStation?.stationName}
-      </span>
-      | {df.format(new Date(lastSelectedDate))}
-    </section>
+      <div class="py-4 px-4 bg-info text-info-foreground rounded-md">
+        Train on alternate days
+      </div>
 
-    <section class="flex flex-col gap-2">
-      {#each filters.filteredTrainsOnAlternateDate as train (train.trainId)}
-        <TrainBtwStation
-          {train}
-          fromStation={stationIdMap.get(train.stationFrom.stationId)}
-          toStation={stationIdMap.get(train.stationTo.stationId)}
-        />
-      {/each}
-    </section>
-  {/if}
+      <section class="border-solid border-2 rounded-md p-2">
+        {filters.filteredTrainsOnAlternateDate.length} results |
+        <span class="text-nowrap">
+          {lastSelectedFromStation?.stationName}
+          &rightarrow;
+          {lastSelectedToStation?.stationName}
+        </span>
+        | {df.format(new Date(lastSelectedDate))}
+      </section>
+
+      <section class="flex flex-col gap-2 2xl:">
+        {#each filters.filteredTrainsOnAlternateDate as train (train.trainId)}
+          <TrainBtwStation
+            {train}
+            fromStation={stationIdMap.get(train.stationFrom.stationId)}
+            toStation={stationIdMap.get(train.stationTo.stationId)}
+          />
+        {/each}
+      </section>
+    {/if}
+  </section>
 </section>
 
 <style>
+.main-section {
+  grid-template-columns: 1fr;
+}
+
 .filter-section {
   display: grid;
   grid-template-rows: auto 0fr;
@@ -930,8 +944,13 @@ async function onFormSubmit(
   grid-template-rows: auto 1fr;
 }
 
-/* :global(.filter-section[aria-expended="true"]) {
-  grid-template-rows: auto 0fr;
-  grid-template-rows: auto 1fr;
-} */
+:global(main) {
+  max-width: unset !important;
+}
+
+@media (min-width: 1536px) {
+  .main-section {
+    grid-template-columns: auto 1fr;
+  }
+}
 </style>
