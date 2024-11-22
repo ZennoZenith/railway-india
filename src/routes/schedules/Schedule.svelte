@@ -35,7 +35,7 @@ const { schedule }: { schedule: ScheduleRow[] } = $props();
       <Table.Row>
         <Table.Cell>{row.srNo.split(".")[0]}</Table.Cell>
         <Table.Cell>
-          <a href={`/stations/${row.station.stationCode}`}>
+          <a href={`/stations/${row.station.stationCode}`} target="_blank">
             {row.station.stationCode}
           </a>
         </Table.Cell>

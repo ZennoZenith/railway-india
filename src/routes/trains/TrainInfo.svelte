@@ -6,7 +6,11 @@ import { ExternalLink } from "svelte-radix";
 const { trainInfo }: { trainInfo: TrainInfo } = $props();
 </script>
 
-<a class="flex items-center gap-2" href="/schedules/{trainInfo.trainNumber}">
+<a
+  class="flex items-center gap-2"
+  href="/schedules/{trainInfo.trainNumber}"
+  target="_blank"
+>
   Train Schedule <ExternalLink class="inline" />
 </a>
 
@@ -55,7 +59,10 @@ const { trainInfo }: { trainInfo: TrainInfo } = $props();
     <Table.Row>
       <Table.Cell class="font-medium">Station From</Table.Cell>
       <Table.Cell>
-        <a href={`/stations/${trainInfo.stationFrom.stationCode}`}>
+        <a
+          href={`/stations/${trainInfo.stationFrom.stationCode}`}
+          target="_blank"
+        >
           {trainInfo.stationFrom.stationName}
           ({trainInfo.stationFrom.stationCode})
         </a>
@@ -68,7 +75,10 @@ const { trainInfo }: { trainInfo: TrainInfo } = $props();
     <Table.Row>
       <Table.Cell class="font-medium">Station To</Table.Cell>
       <Table.Cell>
-        <a href={`/stations/${trainInfo.stationTo.stationCode}`}>
+        <a
+          href={`/stations/${trainInfo.stationTo.stationCode}`}
+          target="_blank"
+        >
           {trainInfo.stationTo.stationName}
           ({trainInfo.stationTo.stationCode})
         </a>
