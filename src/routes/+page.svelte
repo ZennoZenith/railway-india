@@ -20,11 +20,11 @@ import {
   DateFormatter,
   type DateValue,
 } from "@internationalized/date";
-import type { StationGeneralInfo } from "api-railway/dist/stations";
 import type {
+  StationGeneralInfo,
   TrainsBetweenStations,
   TrainsBetweenStationsTrains,
-} from "api-railway/dist/trainsBtwStations";
+} from "api-railway/dist/types";
 import type { TrainClassTypeXX } from "api-railway/dist/types";
 import { untrack } from "svelte";
 import { CaretDown, CaretUp } from "svelte-radix";
@@ -447,13 +447,16 @@ let date = $state<DateValue>(
     todayDate.getDate(),
   ),
 );
-let formatedDate = $derived(date?.toString());
+
+let formatedDate = $derived(
+  date ? date.toString() : null,
+);
 let list = $state<DropDownListItem[]>([]);
 let fromStationSelected = $state<DropDownListItem>();
 let toStationSelected = $state<DropDownListItem>();
 let lastSelectedFromStation = $state<StationGeneralInfo>();
 let lastSelectedToStation = $state<StationGeneralInfo>();
-let lastSelectedDate = $state<string>("2002-03-19");
+let lastSelectedDate = $state<string | null>(null);
 
 let response = $state<Superposition<ValidationError, TrainsBetweenStations>>();
 
@@ -487,7 +490,6 @@ $effect(() => {
           `No trains found between ${fromStationSelected?.dataText} and ${toStationSelected?.dataText}`,
         );
       }
-      console.log();
       return;
     }
 
@@ -572,7 +574,9 @@ async function autocomplete(query: string) {
 
 function onFromStationSelect() {
   fromStationInputValue = fromStationSelected?.text ?? "";
-  fromStationInputRef?.focus();
+
+  // focus next input field
+  toStationInputRef?.focus();
 }
 
 function onToStationSelect() {
@@ -883,7 +887,11 @@ async function onFormSubmit(
           &rightarrow;
           {lastSelectedToStation?.stationName}
         </span>
-        | {df.format(new Date(lastSelectedDate))}
+        {#if lastSelectedDate}
+          | {df.format(new Date(lastSelectedDate))}
+        {:else}
+          | INVALID DATE
+        {/if}
       </section>
 
       <section class="flex flex-col gap-2">
@@ -914,7 +922,11 @@ async function onFormSubmit(
           &rightarrow;
           {lastSelectedToStation?.stationName}
         </span>
-        | {df.format(new Date(lastSelectedDate))}
+        {#if lastSelectedDate}
+          | {df.format(new Date(lastSelectedDate))}
+        {:else}
+          | "INVALID DATE"
+        {/if}
       </section>
 
       <section class="flex flex-col gap-2 2xl:">

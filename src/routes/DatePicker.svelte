@@ -67,7 +67,7 @@ const items = [
       </Select.Content>
     </Select.Root>
     <div class="rounded-md border">
-      <Calendar type="single" bind:value />
+      <Calendar type="single" bind:value aria-required="true" />
     </div>
   </Popover.Content>
 </Popover.Root>

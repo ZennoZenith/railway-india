@@ -1,4 +1,5 @@
-import type { TrainRunsOnDays } from "api-railway/dist/types";
+import { json } from "@sveltejs/kit";
+import type { ApiError, TrainRunsOnDays } from "api-railway/dist/types";
 // place files you want to import through the `$lib` alias in this folder.
 export type FormDataValidationError = Record<string, [string, ...string[]] | undefined>;
 
@@ -22,7 +23,9 @@ export type Superposition<T extends FormDataValidationError = {}, U = {}> = {
   data: U;
 };
 
-export async function catchError<T, E = Error>(promise: Promise<T>): Promise<[undefined, T] | [E]> {
+export async function catchError<T, E extends { message: string } = Error>(
+  promise: Promise<T>,
+): Promise<[undefined, T] | [E]> {
   try {
     const data = await promise;
     return [undefined, data] as [undefined, T];
@@ -55,6 +58,28 @@ export async function fetchJson<T>(
   }
 
   return { success: true, data: errorJson[1] };
+}
+
+export function handleApiResponseError<T extends object>(
+  errorJson: [Error | { message: string }] | [undefined, ApiError | T],
+): Superposition<{}, T> {
+  if (errorJson[0]) {
+    return {
+      success: false,
+      httpCode: 500,
+      error: { type: "GENERIC", messages: [errorJson[0].message] },
+    } satisfies Superposition;
+  }
+
+  if ("error" in errorJson[1]) {
+    return {
+      success: false,
+      httpCode: errorJson[1].httpCode,
+      error: { type: "GENERIC", messages: [errorJson[1].error] },
+    } satisfies Superposition;
+  }
+
+  return { success: true, data: errorJson[1] } as Superposition<{}, T>;
 }
 
 export function uuidv4() {

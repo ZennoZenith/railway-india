@@ -1,27 +1,19 @@
 <script lang="ts">
-import { applyAction, enhance } from "$app/forms";
-import { invalidateAll } from "$app/navigation";
 import { Debounce, fetchJson, type Superposition } from "$lib";
 import Dropdown from "$lib/components/Dropdown.svelte";
 import { Button } from "$lib/components/ui/button/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { CreateSearchable } from "$lib/search.svelte";
-import { getToastState } from "$lib/toast-state.svelte";
 import type { DropDownListItem } from "$lib/types";
-import type { StationGeneralInfo } from "api-railway/dist/stations";
+import type { StationGeneralInfo, StationInfo } from "api-railway/dist/types";
 import { tick } from "svelte";
-import type { ActionData, SubmitFunction } from "./$types";
-import type { FormError } from "./+page.server";
-import StationInfo from "./StationInfo.svelte";
+import StationInfoComp from "./StationInfo.svelte";
 
-type Props = {
-  form: ActionData;
-};
-
-let { form }: Props = $props();
+let response = $state<
+  Superposition<{ stationCode: [string] }, StationInfo>
+>();
 let formInputValue: string = $state("");
 let formRef: HTMLFormElement;
-const toastState = getToastState();
 let searchable = new CreateSearchable();
 const debounce = new Debounce();
 let selectedItem = $state<DropDownListItem>();
@@ -30,7 +22,6 @@ let list = $state<DropDownListItem[]>([]);
 function onInputChange(
   event: Event & { currentTarget: EventTarget & HTMLInputElement },
 ) {
-  resetError("stationCode");
   if (event.currentTarget.value.trim().length === 0) {
     return;
   }
@@ -78,46 +69,55 @@ function onSelect() {
   }
 }
 
-function resetError(_key: keyof FormError) {
-  // if (form?.success === false && form.error.hasOwnProperty(key)) {
-  //   form.error[key] = undefined;
-  // }
-}
+async function onFormSubmit(
+  event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement },
+) {
+  event.preventDefault();
+  const formData = new FormData(event.currentTarget);
+  const formEntries = Object.fromEntries(formData.entries());
 
-const submit: SubmitFunction = (
-  { formData, cancel },
-) => {
-  const { stationCode } = Object.fromEntries(formData);
-  if (stationCode.toString().trim().length === 0) {
-    toastState.error("Invalid station code");
-    cancel();
+  const stationCode = formEntries.stationCode?.toString().trim();
+  if (!stationCode || stationCode.length === 0) {
+    response = {
+      success: false,
+      httpCode: 400,
+      error: {
+        type: "VALIDATION",
+        data: {
+          stationCode: ["station code invalid"],
+        },
+        messages: ["Validation error"],
+      },
+    } as Superposition<{ stationCode: [string] }, StationInfo>;
+    return;
   }
 
-  return async ({ result }) => {
-    switch (result.type) {
-      case "error":
-        toastState.error(result.error);
-        break;
-      case "failure":
-        if (result.data?.returnType === "Error") {
-          toastState.error(
-            result.data.error.stationCode ?? stationCode.toString(),
-          );
-        }
-        break;
-    }
-    await applyAction(result);
-    await invalidateAll();
-  };
-};
+  const errorJson = await fetchJson<Superposition<{}, StationInfo>>(
+    "/api/stations",
+    {
+      method: "POST",
+      body: JSON.stringify({ stationCode }),
+      headers: {
+        "content-type": "application/json",
+      },
+    },
+  );
+
+  if (!errorJson.success) {
+    console.error(errorJson.error);
+    return;
+  }
+
+  if (errorJson.data.success) {
+    response = errorJson.data;
+  }
+}
 </script>
 
 <form
   bind:this={formRef}
   class="flex justify-center"
-  action="/stations"
-  method="POST"
-  use:enhance={submit}
+  onsubmit={onFormSubmit}
 >
   <div
     class="relative w-full max-w-[480px]"
@@ -137,9 +137,9 @@ const submit: SubmitFunction = (
       name="stationCode"
       value={selectedItem?.dataText ?? ""}
     >
-    {#if form?.returnType === "Error" && form.error.stationCode}
+    {#if response?.success === false && response.error.type === "VALIDATION"}
       <p class="text-error text-sm">
-        {form.error.stationCode}
+        {response.error.data.stationCode[0]}
       </p>
     {/if}
     <Dropdown
@@ -152,7 +152,7 @@ const submit: SubmitFunction = (
   <Button type="submit">Search</Button>
 </form>
 
-{#if form?.returnType === "Station"}
-  {@const station = form.data}
-  <StationInfo {station} />
+{#if response?.success === true}
+  {@const station = response.data}
+  <StationInfoComp {station} />
 {/if}

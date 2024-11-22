@@ -1,7 +1,6 @@
-import { catchError, fetchJson, type Superposition } from "$lib";
+import { catchError, handleApiResponseError, type Superposition } from "$lib";
 import ApiClient from "$lib/server/api";
 import { json } from "@sveltejs/kit";
-import type { ApiError } from "api-railway/dist/types";
 import type { RequestHandler } from "./$types";
 import { validateSchema } from "./schema";
 
@@ -28,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
   }
 
   const { fromStation, toStation, allTrains, flexible, date } = reqData.data;
-  const { url, method, headers, returnType } = ApiClient.trainsBtwStations.getTrainsBtwStations(
+  const errorJson = await ApiClient.trainsBtwStations.getTrainsBtwStations(
     fromStation,
     toStation,
     {
@@ -38,25 +37,7 @@ export const POST: RequestHandler = async ({ request }) => {
     },
   );
 
-  const reqJson = await fetchJson<typeof returnType | ApiError>(url, { headers, method });
+  const handledResponse = handleApiResponseError(errorJson);
 
-  if (!reqJson.success) {
-    return json(
-      reqJson satisfies Superposition,
-      { status: reqJson.httpCode },
-    );
-  }
-
-  if ("error" in reqJson.data) {
-    return json(
-      {
-        success: false,
-        httpCode: reqJson.data.httpCode,
-        error: { type: "GENERIC", messages: [reqJson.data.error] },
-      } satisfies Superposition,
-      { status: reqJson.data.httpCode },
-    );
-  }
-
-  return json({ success: true, data: reqJson.data } satisfies Superposition);
+  return json(handledResponse, { status: handledResponse.success === false ? handledResponse.httpCode : 200 });
 };

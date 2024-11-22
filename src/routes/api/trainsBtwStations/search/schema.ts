@@ -1,5 +1,6 @@
 import type { FormDataValidationError, Superposition } from "$lib";
 import {
+  check,
   flatten,
   forward,
   type InferOutput,
@@ -38,7 +39,7 @@ const schema = pipe(
           union([literal("true"), literal("false")], "invalid allTrains, should be either true or false"),
         ),
       ),
-      date: optional(pipe(string(), trim())),
+      date: pipe(string(), trim(), nonEmpty("Date cannot be empty"), check(isValidDate)),
     },
   ),
   forward(
@@ -79,4 +80,14 @@ export function validateSchema(data: unknown): Superposition<ValidationError, Sc
       },
     },
   };
+}
+
+function isValidDate(v: string) {
+  const d = v.split("-");
+  if (d.length !== 3) return false;
+
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(v)) return false;
+
+  return !isNaN(new Date(v).getTime());
 }

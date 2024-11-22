@@ -4,7 +4,7 @@ import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {
-  const j = await catchError<{ q: string | undefined }>(request.json());
+  const j = await catchError<{ stationCode?: string }>(request.json());
 
   if (j[0]) {
     return json(
@@ -17,20 +17,23 @@ export const POST: RequestHandler = async ({ request }) => {
     );
   }
 
-  const { q } = j[1];
+  const { stationCode } = j[1];
 
-  if (!q) {
+  if (!stationCode) {
     return json(
       {
         success: false,
         httpCode: 400,
-        error: { type: "VALIDATION", messages: ["Validation error"], data: { q: ["q not provided"] } },
-      } satisfies Superposition<{ q: [string] }>,
+        error: {
+          type: "VALIDATION",
+          messages: ["Validation error"],
+          data: { stationCode: ["station code not provided"] },
+        },
+      } satisfies Superposition<{ stationCode: [string] }>,
       { status: 400 },
     );
   }
-
-  const errorJson = await ApiClient.trains.getTrainsLikeQuery(q);
+  const errorJson = await ApiClient.stations.getStation(stationCode.toString());
 
   const handledResponse = handleApiResponseError(errorJson);
 

@@ -5,4 +5,4 @@ import type { PageData } from "./$types";
 let { data }: { data: PageData } = $props();
 </script>
 
-<TrainInfo trainInfo={data} />
+<TrainInfo trainInfo={data.data} />
