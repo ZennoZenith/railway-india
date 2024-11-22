@@ -198,12 +198,16 @@ function swapStations() {
 
 function onClickNextDay() {
   date = date.add({ days: 1 });
-  formRef?.requestSubmit();
+
+  // submit form after date value is set in form
+  setTimeout(() => formRef?.requestSubmit(), 3);
 }
 
 function onClickPrevDay() {
   date = date.subtract({ days: 1 });
-  formRef?.requestSubmit();
+
+  // submit form after date value is set in form
+  setTimeout(() => formRef?.requestSubmit(), 3);
 }
 
 async function onFormSubmit(
