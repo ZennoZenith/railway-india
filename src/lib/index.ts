@@ -1,7 +1,7 @@
-import { json } from "@sveltejs/kit";
 import type { ApiError, TrainRunsOnDays } from "api-railway/dist/types";
-// place files you want to import through the `$lib` alias in this folder.
 export type FormDataValidationError = Record<string, [string, ...string[]] | undefined>;
+
+export const SECONDS_IN_A_DAY = 86400;
 
 export type FormError<E extends FormDataValidationError> = {
   type: "VALIDATION";

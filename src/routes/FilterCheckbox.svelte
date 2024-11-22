@@ -9,19 +9,26 @@ type Props = {
   checked?: boolean;
   text: string;
   color?: string;
+  onCheckedChange?: (value: boolean) => void;
 };
 
 let {
   id,
   data,
-  checked = $bindable(true),
+  checked = true,
   text,
   color,
+  onCheckedChange,
 }: Props = $props();
 </script>
 
 <div class="flex items-center gap-2">
-  <Checkbox {id} data-id={data} bind:checked />
+  <Checkbox
+    {id}
+    data-id={data}
+    {checked}
+    {onCheckedChange}
+  />
   <Label
     for={id}
     class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-nowrap overflow-clip"
