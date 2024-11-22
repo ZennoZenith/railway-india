@@ -30,20 +30,6 @@ import FilterCheckbox from "./FilterCheckbox.svelte";
 import { Filter } from "./filters.svelte";
 import TrainBtwStation from "./TrainBtwStation.svelte";
 
-// function filter() {
-//   filters.sort();
-// }
-
-// $effect(() => {
-//   filters.journeyClasses;
-//   filters.trainTypes;
-//   filters.departureTimes;
-//   filters.arrivalTimes;
-
-//   console.log("Filter effect ran");
-//   filters.filter();
-// });
-
 const filters = new Filter();
 const todayDate = new Date();
 const debounce = new Debounce();
@@ -53,7 +39,7 @@ const toStationSearchable = new CreateSearchable(100);
 const stationIdMap = new Map<number, StationGeneralInfo>();
 const df = new DateFormatter("en-US", { dateStyle: "full" });
 
-// let filterSectionRef = $state<HTMLElement | null>(null);
+let formRef = $state<HTMLFormElement>();
 let fromStationInputRef = $state<HTMLElement | null>(null);
 let toStationInputRef = $state<HTMLElement | null>(null);
 let fromStationInputValue: string = $state("");
@@ -210,6 +196,16 @@ function swapStations() {
   toStationSelected = t2;
 }
 
+function onClickNextDay() {
+  date = date.add({ days: 1 });
+  formRef?.requestSubmit();
+}
+
+function onClickPrevDay() {
+  date = date.subtract({ days: 1 });
+  formRef?.requestSubmit();
+}
+
 async function onFormSubmit(
   event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement },
 ) {
@@ -261,6 +257,7 @@ async function onFormSubmit(
 </script>
 
 <form
+  bind:this={formRef}
   class="grid grid-cols-1 md:grid-cols-4 gap-2 max-w-[960px] mx-auto"
   onsubmit={onFormSubmit}
 >
@@ -365,7 +362,13 @@ async function onFormSubmit(
           Show filters <CaretDown />
         {/if}
       </Button>
-      <Button variant="outline" onclick={() => filters.reset()}>
+      <Button
+        variant="outline"
+        onclick={() => {
+          filters.reset();
+          rerenderFilter += 1;
+        }}
+      >
         Reset filters
       </Button>
     </div>
@@ -535,8 +538,12 @@ async function onFormSubmit(
         </Select.Root>
       </div>
       <div class="flex justify-between gap-2">
-        <Button> <CaretLeft /> Prev. Day </Button>
-        <Button> Next Day <CaretRight /> </Button>
+        <Button type="button" onclick={onClickPrevDay}>
+          <CaretLeft /> Prev. Day
+        </Button>
+        <Button type="button" onclick={onClickNextDay}>
+          Next Day <CaretRight />
+        </Button>
       </div>
     </section>
   {/if}
