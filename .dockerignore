@@ -4,6 +4,7 @@ docker-compose*
 .dockerignore
 .git
 .gitignore
+.gitattributes
 README.md
 LICENSE
 .vscode
@@ -14,3 +15,8 @@ helm-charts
 .idea
 coverage*
 build
+
+.eslintignore
+.eslintrc.cjs
+.prettierrc
+.pretieriignore

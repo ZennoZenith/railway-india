@@ -1,18 +1,17 @@
-FROM oven/bun:latest AS base
-WORKDIR /usr/src/app
+# Dockerfile
 
-COPY package.json bun.lockb ./
+FROM node:23-alpine3.19
 
-RUN bun install --frozen-lockfile
+RUN npm install -g pnpm
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
+RUN pnpm build
 
-RUN bun run build
-
-# ENV NODE_ENV=production
-
-# USER bun:bun
 EXPOSE 4173
 EXPOSE 5173
 
-ENTRYPOINT [ "bun", "run", "preview" ]
+CMD ["pnpm", "run", "preview"]
