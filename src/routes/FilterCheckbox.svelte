@@ -1,6 +1,6 @@
 <script lang="ts">
-// import { Checkbox } from "$lib/components/ui/checkbox";
-import Checkbox from "$lib/components/Checkbox.svelte";
+import { Checkbox } from "$lib/components/ui/checkbox";
+// import Checkbox from "$lib/components/Checkbox.svelte";
 import { Label } from "$lib/components/ui/label";
 import { ComponentBoolean } from "svelte-radix";
 
