@@ -1,0 +1,20 @@
+FROM node:alpine AS nodebase
+RUN npm install -g pnpm
+WORKDIR /app
+
+FROM nodebase AS pnpminstall
+RUN mkdir -p /temp/dev
+COPY package.json pnpm-lock.yaml /temp/dev/
+RUN cd /temp/dev && pnpm install --frozen-lockfile
+
+
+FROM nodebase AS prerelease
+COPY --from=pnpminstall /temp/dev/node_modules node_modules
+COPY . .
+RUN pnpm run build
+
+FROM nodebase as release
+COPY --from=prerelease /app ./
+
+EXPOSE 4173
+ENTRYPOINT [ "pnpm", "run", "preview" ]

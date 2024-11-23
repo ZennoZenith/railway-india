@@ -1,0 +1,19 @@
+FROM oven/bun:latest AS bunbase
+WORKDIR /app
+
+FROM bunbase AS buninstall
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
+
+FROM bunbase AS prerelease
+COPY --from=buninstall /temp/dev/node_modules node_modules
+COPY . .
+ENV NODE_ENV=production
+RUN bun run build
+
+FROM bunbase as release
+COPY --from=prerelease /app ./
+
+EXPOSE 4173
+ENTRYPOINT [ "bun", "run", "preview" ]
