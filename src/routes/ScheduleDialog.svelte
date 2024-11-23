@@ -1,8 +1,7 @@
 <script lang="ts">
 import { fetchJson, type Superposition } from "$lib";
-import { buttonVariants } from "$lib/components/ui/button";
 import * as Dialog from "$lib/components/ui/dialog/index.js";
-import type { ScheduleRow } from "api-railway/dist/schedules";
+import type { ScheduleRow } from "api-railway/dist/types";
 import Schedule from "./schedules/Schedule.svelte";
 
 let { trainNumber }: { trainNumber: string } = $props();

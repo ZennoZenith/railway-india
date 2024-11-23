@@ -1,8 +1,10 @@
 <script lang="ts">
 import { DurationSecToHM, trainRunningDate, trainRunsOnUtil } from "$lib";
 import { Separator } from "$lib/components/ui/separator";
-import type { StationGeneralInfo } from "api-railway/dist/stations";
-import type { TrainsBetweenStationsTrains } from "api-railway/dist/trainsBtwStations";
+import type {
+  StationGeneralInfo,
+  TrainsBetweenStationsTrains,
+} from "api-railway/dist/types";
 import ScheduleDialog from "./ScheduleDialog.svelte";
 
 type Props = {

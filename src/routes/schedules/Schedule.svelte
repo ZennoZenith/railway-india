@@ -1,6 +1,6 @@
 <script lang="ts">
 import * as Table from "$lib/components/ui/table/index.js";
-import type { ScheduleRow } from "api-railway/dist/schedules";
+import type { ScheduleRow } from "api-railway/dist/types";
 
 const { schedule }: { schedule: ScheduleRow[] } = $props();
 </script>
