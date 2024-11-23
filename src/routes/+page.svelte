@@ -519,39 +519,39 @@ async function onFormSubmit(
     </div>
   </div>
 
-  {#if response?.success === true}
-    <section class="flex gap-4 sm:flex-row flex-col-reverse">
-      <div class="flex items-center gap-2 mr-auto">
-        Sort by
-        <Select.Root
-          type="single"
-          name="sortBy"
-          onValueChange={v => filters.setSortOptions(v)}
-          value={filters.selectedSortOptions.value}
-        >
-          <Select.Trigger class="w-36">
-            {filters.selectedSortOptions.label}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Group>
-              {#each filters.sortOptions as opt}
-                <Select.Item value={opt.value} label={opt.text} />
-              {/each}
-            </Select.Group>
-          </Select.Content>
-        </Select.Root>
-      </div>
-      <div class="flex justify-between gap-2">
-        <Button type="button" onclick={onClickPrevDay}>
-          <CaretLeft /> Prev. Day
-        </Button>
-        <Button type="button" onclick={onClickNextDay}>
-          Next Day <CaretRight />
-        </Button>
-      </div>
-    </section>
-  {/if}
   <section class="flex flex-col gap-4 mt-4">
+    {#if response?.success === true}
+      <section class="flex gap-4 sm:flex-row flex-col-reverse">
+        <div class="flex items-center gap-2 mr-auto">
+          Sort by
+          <Select.Root
+            type="single"
+            name="sortBy"
+            onValueChange={v => filters.setSortOptions(v)}
+            value={filters.selectedSortOptions.value}
+          >
+            <Select.Trigger class="w-36">
+              {filters.selectedSortOptions.label}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Group>
+                {#each filters.sortOptions as opt}
+                  <Select.Item value={opt.value} label={opt.text} />
+                {/each}
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+        </div>
+        <div class="flex justify-between gap-2">
+          <Button type="button" onclick={onClickPrevDay}>
+            <CaretLeft /> Prev. Day
+          </Button>
+          <Button type="button" onclick={onClickNextDay}>
+            Next Day <CaretRight />
+          </Button>
+        </div>
+      </section>
+    {/if}
     {#if filters.filteredTrainsOnDate.length > 0}
       <section class="border-solid border-2 rounded-md p-2">
         {filters.filteredTrainsOnDate.length} results |
