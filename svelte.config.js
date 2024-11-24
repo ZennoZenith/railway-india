@@ -1,5 +1,5 @@
-import adapter from "@sveltejs/adapter-auto";
-// import adapter from "@sveltejs/adapter-node";
+// import adapter from "@sveltejs/adapter-auto";
+import adapter from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { mdsvex } from "mdsvex";
 
@@ -9,7 +9,7 @@ const config = {
   kit: {
     adapter: adapter(),
   },
-  extensions: [".svelte", ".md"],
+  extensions: [".svelte", ".svx"],
   compilerOptions: {
     runes: true,
   },
