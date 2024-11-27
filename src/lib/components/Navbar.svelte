@@ -31,8 +31,7 @@ import { Separator } from "./ui/separator";
     Stations
   </a>
   <a
-    href="https://docs.railway.zennozenith.com"
-    target="_blank"
+    href="/docs"
     class="text-muted-foreground hover:text-primary font-medium transition-colors ml-auto"
   >
     Docs
