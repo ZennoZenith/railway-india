@@ -1,5 +1,5 @@
 <script lang="ts">
-import "../app.css";
+import "../../app.css";
 import Navbar from "$lib/components/Navbar.svelte";
 import Toaster from "$lib/components/Toaster.svelte";
 import { setToastState } from "$lib/toast-state.svelte";
