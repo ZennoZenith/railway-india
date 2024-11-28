@@ -12,3 +12,8 @@ export type DropDownListItem = {
   text: string;
   dataText: string;
 };
+
+export type DocumentationMeta = {
+  title: string;
+  description: string;
+};

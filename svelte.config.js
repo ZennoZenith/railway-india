@@ -7,7 +7,7 @@ import { createHighlighter } from "shiki";
 const theme = "github-dark";
 const highlighter = await createHighlighter({
   themes: [theme],
-  langs: ["javascript", "typescript"],
+  langs: ["javascript", "typescript", "json"],
 });
 
 /** @type {import('mdsvex').MdsvexOptions} */
@@ -18,7 +18,7 @@ const mdsvexOptions = {
       return `{@html \`${html}\` }`;
     },
   },
-  extensions: [".svx", ".md"],
+  extensions: [".md"],
 };
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -29,7 +29,7 @@ const config = {
   kit: {
     adapter: adapter(),
   },
-  extensions: [".svelte", ".svx", ".md"],
+  extensions: [".svelte", ".md"],
   compilerOptions: {
     runes: true,
   },
