@@ -1,10 +1,6 @@
 ---
 title: Rate limiting
 description: Rate limiting
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
 ---
 
 Limits are placed on the number of API requests you may make using your API
@@ -15,7 +11,7 @@ HTTP code 429 (Too many request) and stop you from making further requests. The 
 automatically be lifted by waiting a minute. If you need higher rate limits,
 contact us.
 
-# How Do I See My Current Usage?
+## How Do I See My Current Usage?
 
 Your can check your current rate limit and usage details by inspecting the RateLimit-Limit and RateLimit-Remaining HTTP headers that are returned on every API response. For example, if an API has the default hourly limit of 1,000 request, after making 2 requests, you will receive this HTTP header in the response of the second request:
 

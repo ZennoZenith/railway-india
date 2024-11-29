@@ -1,62 +1,57 @@
 ---
 title: Schedule
 description: Schedule
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
-basePath: api.railway.zennozenith.com
-prev: true
+basePath: api.railwayindia.in
 ---
 
-# GET /schedules/\{trainNumbers}
+## `GET /schedules/<trainNumbers>`
 
-Base path: {{$frontmatter.basePath}}
+Base path: {basePath}
 
-## Summary
+### Summary
 
 Get schedule for given train numbers(s)
 
-## URL
+### URL
 
-`/v1/trains/{trainNumber}?fullSchedule={true/false}`
+`/v1/trains/<trainNumber>?fullSchedule=<true/false>`
 
-## Request URL Parameters:
+### Request URL Parameters:
 
 | Parameters  | Required? | Description  |
 | ----------- | --------- | ------------ |
 | trainNumber | required  | train number |
 
-## Request Query Parameters:
+### Request Query Parameters:
 
 | Parameters   | Required?                 | Description                                                                                                                |
-| ------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| ------------ | ------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
 | fullSchedule | (optional, default=false) | include intermediate stations also. Will be applied to all train if multiple train numbers are given in request parameters |
 
 ::: warning
 [Bad Request](/errorcodes#BadRequest) error response will be given if fullSchedule is any value other than `true` or `false`
 :::
 
-## Usage Example:
+### Usage Example:
 
-- {{$frontmatter.basePath}}/api/v1/schedules/12650
-- {{$frontmatter.basePath}}/api/v1/schedules/12650?fullSchedule=true
+- {basePath}/api/v1/schedules/12650
+- {basePath}/api/v1/schedules/12650?fullSchedule=true
 
-## Possible errors
+### Possible errors
 
 - [NotFound](/errorcodes#NotFound) : No schedule found for given trainNumber
 - [BadRequest](/errorcodes#BadRequest) : query paramtere `fullSchedule` in not a boolean value
 
-## Response
+### Response
 
     On success, 200
     On not found, 404
 
-## Response Body
+### Response Body
 
 List of schedules
 
-## Response Body Structure
+### Response Body Structure
 
 ```ts
 Array<{
@@ -79,7 +74,7 @@ Array<{
 }>;
 ```
 
-## Sample response
+### Sample response
 
 ```json
 [

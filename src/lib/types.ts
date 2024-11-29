@@ -16,4 +16,16 @@ export type DropDownListItem = {
 export type DocumentationMeta = {
   title: string;
   description: string;
+  outline?: string;
+  lastUpdated?: boolean;
+  editLink?: boolean;
+  lang?: string;
+  prev?: {
+    text: string;
+    link: string;
+  };
+  next?: {
+    text: string;
+    link: string;
+  };
 };

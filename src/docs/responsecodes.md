@@ -1,13 +1,7 @@
 ---
 title: Response Codes
 description: Response Codes
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
 ---
-
-# Response Codes
 
 We use standard HTTP codes to denote successful execution or indicate when
 errors occur. For some errors, the response will include additional information
@@ -44,7 +38,7 @@ readable error description. The format of this error entity is below:
   "errorCode": 4,
   "title": "Limit Out of Range",
   "error": "Limit value passed: 100",
-  "href": "https://railway.zennozenith.com/errorcodes#LimitOutOfRange"
+  "href": "https://railwayindia.in/docs/errorcodes#LimitOutOfRange"
 }
 ```
 

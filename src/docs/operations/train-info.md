@@ -1,17 +1,12 @@
 ---
 title: Train info
 description: Train info
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
-basePath: api.railway.zennozenith.com
-prev: true
+basePath: api.railwayindia.in
 ---
 
-# GET /trains/\{trainNumber}
+# `GET /trains/<trainNumber>`
 
-Base path: {{$frontmatter.basePath}}
+Base path: {basePath}
 
 ## Summary
 
@@ -19,7 +14,7 @@ Get train info for given train number
 
 ## URL
 
-`/v1/trains/{trainNumber}`
+`/v1/trains/<trainNumber>`
 
 ## Request URL Parameters:
 
@@ -29,11 +24,11 @@ Get train info for given train number
 
 ## Usage Example:
 
-- {{$frontmatter.basePath}}/v1/trains/12650
+- {basePath}/v1/trains/12650
 
 ## Possible errors
 
-- [NotFound](/errorcodes#NotFound) : No trains found for given trainNumber
+- [NotFound](./errorcodes#NotFound) : No trains found for given trainNumber
 
 ## Response HTTP codes
 

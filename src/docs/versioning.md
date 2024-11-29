@@ -1,17 +1,10 @@
 ---
 title: Versioning
 description: Versioning
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
-prev:
-  text: 'Response Codes'
-  link: '/responsecodes'
 ---
 
 API releases are versioned using a two part versioning scheme:
-`{major version}.{minor version}` .
+`<major version>.<minor version>` .
 
 We broadly follow [Semantic Versioning](https://semver.org/) principles when
 versioning the API. The major version number is incremented when a
@@ -20,7 +13,7 @@ incorporating the major version, using the following pattern (relative to the
 base URL):
 
 ```
-/v{major version number}/{operation-specific component}
+/v<major version number>/<operation-specific component>
 ```
 
 Minor version numbers are incremented when backwards-compatible changes occur.

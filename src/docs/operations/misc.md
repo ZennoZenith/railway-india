@@ -1,12 +1,7 @@
 ---
 title: Response Codes
 description: Response Codes
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
-basePath: api.railway.zennozenith.com
-prev: true
+basePath: api.railwayindia.in
 ---
 
 # Miscellaneous
@@ -29,7 +24,7 @@ Get list of all states
 
 ### Possible errors
 
-- [NotFound](/docs/errorcodes#NotFound) : No state found
+- [NotFound](./errorcodes#NotFound) : No state found
 
 ### Response
 
@@ -68,7 +63,7 @@ Get all zones
 
 ### Possible errors
 
-- [NotFound](/errorcodes#NotFound) : No zone found
+- [NotFound](./errorcodes#NotFound) : No zone found
 
 ### Response
 
@@ -121,7 +116,7 @@ Get all train types
 
 ### Possible errors
 
-- [NotFound](/errorcodes#NotFound) : No train type found
+- [NotFound](./errorcodes#NotFound) : No train type found
 
 ### Response
 

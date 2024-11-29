@@ -1,17 +1,12 @@
 ---
 title: Train list
 description: Train list
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
-basePath: api.railway.zennozenith.com
-prev: true
+basePath: api.railwayindia.in
 ---
 
 # GET /trains
 
-Base path: {{$frontmatter.basePath}}
+Base path: {basePath}
 
 ## Summary
 
@@ -24,7 +19,7 @@ Get list of trains for given query string
 ## Request Query Parameters:
 
 | Parameters  | Required?                           | Description                                          |
-| ----------- | ----------------------------------- | ---------------------------------------------------- |
+| ----------- | ----------------------------------- | :--------------------------------------------------- |
 | q           | partial required                    | query string to find like train number or train name |
 | trainNumber | partial required                    | query string to find like train number               |
 | limit       | optional, default=10, min=1, max=50 | limit number of trains                               |
@@ -35,21 +30,21 @@ If both `q` and `trainNumber` is provided, `q` will take precedence.
 
 ::: warning
 
-- [Limit Out Of Range](/errorcodes#LimitOutOfRange) error response will be given if limit is not in range
-- [Bad Request](/errorcodes#BadRequest) error response will be given if limit is not a **positive integer**
+- [Limit Out Of Range](./errorcodes#LimitOutOfRange) error response will be given if limit is not in range
+- [Bad Request](./errorcodes#BadRequest) error response will be given if limit is not a **positive integer**
   :::
 
 ## Usage Example:
 
-- {{$frontmatter.basePath}}/v1/trains?q=taj
-- {{$frontmatter.basePath}}/v1/trains?q=126
-- {{$frontmatter.basePath}}/v1/trains?q=12&limit=15
-- {{$frontmatter.basePath}}/v1/trains?trainNumber=126
+- {basePath}/v1/trains?q=taj
+- {basePath}/v1/trains?q=126
+- {basePath}/v1/trains?q=12&limit=15
+- {basePath}/v1/trains?trainNumber=126
 
 ## Possible errors
 
-- [Not Found](/errorcodes#NotFound) : No trains found for given query
-- [Bad Request](/errorcodes#BadRequest) : Query parameter is invalid string or is not specified
+- [Not Found](./errorcodes#NotFound) : No trains found for given query
+- [Bad Request](./errorcodes#BadRequest) : Query parameter is invalid string or is not specified
 
 ## Response HTTP codes
 

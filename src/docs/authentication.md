@@ -1,10 +1,6 @@
 ---
 title: Authenitcation
 description: Authenitcation
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
 ---
 
 # Authentication

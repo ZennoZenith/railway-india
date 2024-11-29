@@ -1,10 +1,6 @@
 ---
 title: Error Codes
 description: Error Codes
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
 ---
 
 ## UnExpectedError

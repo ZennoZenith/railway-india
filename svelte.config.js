@@ -7,7 +7,7 @@ import { createHighlighter } from "shiki";
 const theme = "github-dark";
 const highlighter = await createHighlighter({
   themes: [theme],
-  langs: ["javascript", "typescript", "json"],
+  langs: ["javascript", "typescript", "json", "sh"],
 });
 
 /** @type {import('mdsvex').MdsvexOptions} */

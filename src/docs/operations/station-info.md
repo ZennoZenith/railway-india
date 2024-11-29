@@ -1,12 +1,7 @@
 ---
 title: Station info
 description: Station info
-outline: deep
-lastUpdated: true
-editLink: true
-lang: en-US
 basePath: api.railwayindia.in
-prev: true
 ---
 
 # GET /stations/\{stationCodes}
@@ -19,7 +14,7 @@ Get station info for given station code(s)
 
 ## URL
 
-`/v1/stations/{stationCode}`
+`/v1/stations/<stationCode>`
 
 ## Request URL Parameters:
 
@@ -33,7 +28,7 @@ Get station info for given station code(s)
 
 ## Possible errors
 
-- [NotFound](/errorcodes#NotFound) : No station found for given `stationCode`
+- [NotFound](./errorcodes#NotFound) : No station found for given `stationCode`
 
 ## Response HTTP code
 
