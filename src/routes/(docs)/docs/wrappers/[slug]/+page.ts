@@ -3,8 +3,6 @@ import { error } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
-  console.log(params);
-
   try {
     const post = await import(`../../../../../docs/wrappers/${params.slug}.md`);
 

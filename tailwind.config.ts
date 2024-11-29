@@ -84,7 +84,6 @@ const config: Config = {
       },
       fontFamily: {
         sans: [...fontFamily.sans],
-        cascadia: ["CascadiaCode", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
