@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Separator } from "$lib/components/ui/separator";
 import type { Snippet } from "svelte";
+import { Cross1 } from "svelte-radix";
 import "../../app.css";
 import "./prose.css";
 
@@ -67,10 +68,18 @@ const sidebar: Aside = {
 </svelte:head>
 
 <div class="layout">
-  <aside class="bg-background">
+  <aside class="bg-background relative">
     <div class="sticky w-full top-0 left-0 grid gap-4 pt-8 bg-background">
       <div>{sidebar.title}</div>
       <Separator />
+      <button
+        id="sidebar-close-btn"
+        type="button"
+        class="absolute right-0 top-3"
+        aria-label="Close"
+      >
+        <Cross1 />
+      </button>
     </div>
     <div class="grid grid-cols-1 gap-3 pb-4">
       {#each sidebar.links as link}
@@ -102,7 +111,6 @@ const sidebar: Aside = {
 
 <style>
 .layout {
-  position: relative;
   display: grid;
   grid-template-columns: 272px auto;
 }
@@ -110,6 +118,9 @@ const sidebar: Aside = {
 aside {
   padding: 0 16px 0 32px;
   display: grid;
+  position: sticky;
+  left: 0;
+  top: 0;
   grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1rem;
   overflow: auto;
@@ -128,8 +139,12 @@ aside::-webkit-scrollbar-thumb {
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
+#sidebar-close-btn {
+  display: none;
+}
+
 main {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   text-wrap: balance;
   padding: 1rem;
@@ -137,14 +152,20 @@ main {
 
 @media (max-width: 960px) {
   .layout {
-    position: relative;
     display: grid;
     grid-template-columns: 1fr;
   }
 
   aside {
+    z-index: 99;
     position: fixed;
+    top: 0;
+    left: 0;
     width: 320px;
+    height: 100dvh;
+  }
+  #sidebar-close-btn {
+    display: block;
   }
 }
 </style>
