@@ -2,7 +2,7 @@
 import { Separator } from "./ui/separator";
 </script>
 
-<nav class="flex gap-2 border-b p-4 text-base">
+<nav class="sticky top-0 flex gap-2 border-b p-4 text-base bg-background z-50">
   <a
     href="/"
     class="text-muted-foreground hover:text-primary font-medium transition-colors"

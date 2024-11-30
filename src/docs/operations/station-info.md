@@ -4,7 +4,7 @@ description: Station info
 basePath: api.railwayindia.in
 ---
 
-# GET /stations/\{stationCodes}
+# GET /stations/&#x2039;stationCodes&#x203A;
 
 Base path: {basePath}
 

@@ -11,7 +11,7 @@ prev: true
 
 # GET /trainsBtwStations
 
-    Base path: {{$frontmatter.basePath}}
+    Base path: {basePath}
 
 ## Summary
 
@@ -35,8 +35,8 @@ Get trains between stations
 
 ## Usage Example:
 
-- {{$frontmatter.basePath}}/api/v1/trainsBtwStations?fromStation=GWL&toStation=HWH
-- {{$frontmatter.basePath}}/api/v1/trainsBtwStations?fromStation=GWL&toStation=HWH&allTrains=true
+- {basePath}/api/v1/trainsBtwStations?fromStation=GWL&toStation=HWH
+- {basePath}/api/v1/trainsBtwStations?fromStation=GWL&toStation=HWH&allTrains=true
 
 ## Possible errors
 
