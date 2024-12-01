@@ -7,26 +7,6 @@ import { Cross1 } from "svelte-radix";
 import { getSidebarState } from "./sidebar-state.svelte";
 
 const sidebarState = getSidebarState();
-let asideRef = $state<HTMLElement>();
-$effect(() => {
-  if (browser) {
-    document.addEventListener("click", e => {
-      if (!asideRef) return;
-      if (!e.currentTarget) return;
-      const clickedOnSidebar = asideRef.contains(e.target as HTMLElement);
-      console.log(clickedOnSidebar);
-
-      //   untrack(() => {
-      //     console.log("hello");
-      //     if (!clickedOnSidebar && sidebarState.isSidebarOpen) {
-      //       console.log("hello2");
-      //       sidebarState.closeSidebar();
-      //     }
-      //   });
-    });
-  }
-});
-
 const sidebar: Aside = {
   title: "Railway API Docs",
   links: [
@@ -72,10 +52,7 @@ const sidebar: Aside = {
 };
 </script>
 
-<aside
-  bind:this={asideRef}
-  class:open={sidebarState.isSidebarOpen}
->
+<aside class:open={sidebarState.isSidebarOpen}>
   <div
     id="aside-main"
     class="relative bg-background flex flex-col gap-4 px-4"
@@ -110,7 +87,14 @@ const sidebar: Aside = {
       {/each}
     </div>
   </div>
-  <div id="aside-other" class:aside-other-open={sidebarState.isSidebarOpen}>
+  <div
+    tabindex="0"
+    id="aside-other"
+    class:aside-other-open={sidebarState.isSidebarOpen}
+    onclick={() => sidebarState.closeSidebar()}
+    onkeydown={() => sidebarState.closeSidebar()}
+    role="button"
+  >
   </div>
 </aside>
 
