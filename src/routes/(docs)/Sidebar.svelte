@@ -1,8 +1,6 @@
 <script lang="ts">
-import { browser } from "$app/environment";
 import { Separator } from "$lib/components/ui/separator";
 import type { Aside } from "$lib/types";
-import { untrack } from "svelte";
 import { Cross1 } from "svelte-radix";
 import { getSidebarState } from "./sidebar-state.svelte";
 
