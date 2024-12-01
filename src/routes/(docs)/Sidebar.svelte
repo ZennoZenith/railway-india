@@ -16,13 +16,13 @@ $effect(() => {
       const clickedOnSidebar = asideRef.contains(e.target as HTMLElement);
       console.log(clickedOnSidebar);
 
-      untrack(() => {
-        console.log("hello");
-        if (!clickedOnSidebar && sidebarState.isSidebarOpen) {
-          console.log("hello2");
-          sidebarState.closeSidebar();
-        }
-      });
+      //   untrack(() => {
+      //     console.log("hello");
+      //     if (!clickedOnSidebar && sidebarState.isSidebarOpen) {
+      //       console.log("hello2");
+      //       sidebarState.closeSidebar();
+      //     }
+      //   });
     });
   }
 });
@@ -74,49 +74,53 @@ const sidebar: Aside = {
 
 <aside
   bind:this={asideRef}
-  class="bg-background relative"
   class:open={sidebarState.isSidebarOpen}
-  onclick={() => console.log("Sidebar clicked")}
 >
-  <div class="sticky w-full top-0 left-0 grid gap-4 pt-8 bg-background">
-    <div>{sidebar.title}</div>
-    <Separator />
-    <button
-      id="sidebar-close-btn"
-      type="button"
-      class="absolute right-0 top-3"
-      aria-label="Close"
-      onclick={() => sidebarState.closeSidebar()}
-    >
-      <Cross1 />
-    </button>
+  <div
+    id="aside-main"
+    class="relative bg-background flex flex-col gap-4 px-4"
+  >
+    <div class="sticky w-full top-0 left-0 grid gap-4 pt-4 bg-background h-min">
+      <div class="flex justify-between">
+        {sidebar.title}
+        <button
+          id="sidebar-close-btn"
+          type="button"
+          aria-label="Close"
+          onclick={() => sidebarState.closeSidebar()}
+        >
+          <Cross1 />
+        </button>
+      </div>
+      <Separator />
+    </div>
+    <div class="grid grid-cols-1 gap-3 pb-4">
+      {#each sidebar.links as link}
+        {#if link.items !== undefined}
+          <div>
+            <Separator />
+          </div>
+        {/if}
+        <div><a href={link.link}> {link.text} </a></div>
+        {#if link.items !== undefined}
+          {#each link.items as item}
+            <div><a href={item.link}> {item.text} </a></div>
+          {/each}
+        {/if}
+      {/each}
+    </div>
   </div>
-  <div class="grid grid-cols-1 gap-3 pb-4">
-    {#each sidebar.links as link}
-      {#if link.items !== undefined}
-        <div>
-          <Separator />
-        </div>
-      {/if}
-      <div><a href={link.link}> {link.text} </a></div>
-      {#if link.items !== undefined}
-        {#each link.items as item}
-          <div><a href={item.link}> {item.text} </a></div>
-        {/each}
-      {/if}
-    {/each}
+  <div id="aside-other" class:aside-other-open={sidebarState.isSidebarOpen}>
   </div>
 </aside>
 
 <style>
 aside {
-  padding: 0 16px 0 32px;
   display: grid;
   position: sticky;
   left: 0;
   top: 0;
   grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1rem;
   overflow: auto;
   height: calc(100dvh - var(--navbar-height));
   transition: all 250ms;
@@ -138,19 +142,34 @@ aside::-webkit-scrollbar-thumb {
   display: none;
 }
 
+#aside-other {
+  display: none;
+}
+
 @media (max-width: 960px) {
   aside {
+    --floating-sidebar-width: min(320px, 90dvw);
     z-index: 99;
+    overflow: hidden;
     position: fixed;
-    top: 0;
-    left: -320px;
-    width: 320px;
-    height: 100dvh;
+    left: calc(0px - var(--floating-sidebar-width));
+    top: var(--navbar-height);
+    max-width: calc(100dvw);
+    height: calc(100dvh - var(--navbar-height));
+    grid-template-columns: var(--floating-sidebar-width) auto;
+  }
+
+  #aside-main {
+    overflow: auto;
   }
 
   .open {
     left: 0;
-    margin-right: 100dvw;
+  }
+
+  .aside-other-open {
+    display: block !important;
+    width: calc(100dvw - var(--floating-sidebar-width));
   }
 
   #sidebar-close-btn {

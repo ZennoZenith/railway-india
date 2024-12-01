@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 
 export class SidebarState {
-  isSidebarOpen = $state(true);
+  isSidebarOpen = $state(false);
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;

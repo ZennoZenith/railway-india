@@ -31,7 +31,6 @@ main {
 
 @media (max-width: 960px) {
   .layout {
-    display: grid;
     grid-template-columns: 1fr;
   }
 }

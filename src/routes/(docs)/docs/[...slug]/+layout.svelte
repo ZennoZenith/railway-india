@@ -1,10 +1,19 @@
 <script lang="ts">
 import { Separator } from "$lib/components/ui/separator";
+import { untrack } from "svelte";
 import { CaretRight, TextAlignLeft } from "svelte-radix";
 import { getSidebarState } from "../../sidebar-state.svelte";
 let { data, children } = $props();
 const sidebarState = getSidebarState();
 let onThisPageOpen = $state(false);
+
+// On layout load close sidebar
+$effect(() => {
+  data;
+  untrack(() => {
+    sidebarState.closeSidebar();
+  });
+});
 </script>
 
 <svelte:head>
