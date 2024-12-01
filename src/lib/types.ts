@@ -29,3 +29,14 @@ export type DocumentationMeta = {
     link: string;
   };
 };
+
+export type Links = {
+  text: string;
+  link?: string;
+  items?: Links[];
+};
+
+export type Aside = {
+  title: string;
+  links: Links[];
+};
