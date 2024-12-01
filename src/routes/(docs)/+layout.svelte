@@ -10,12 +10,10 @@ setSidebarState();
 
 <div class="layout">
   <Sidebar />
-  <main>
-    <article class="prose">
-      <div>
-        {@render children?.()}
-      </div>
-    </article>
+  <main class="prose">
+    <div>
+      {@render children?.()}
+    </div>
   </main>
 </div>
 
@@ -29,7 +27,6 @@ main {
   overflow-y: auto;
   overflow-x: hidden;
   text-wrap: balance;
-  padding: 1rem;
 }
 
 @media (max-width: 960px) {

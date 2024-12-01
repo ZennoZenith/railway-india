@@ -1,10 +1,32 @@
 <script lang="ts">
+import { browser } from "$app/environment";
 import { Separator } from "$lib/components/ui/separator";
 import type { Aside } from "$lib/types";
+import { untrack } from "svelte";
 import { Cross1 } from "svelte-radix";
 import { getSidebarState } from "./sidebar-state.svelte";
 
 const sidebarState = getSidebarState();
+let asideRef = $state<HTMLElement>();
+$effect(() => {
+  if (browser) {
+    document.addEventListener("click", e => {
+      if (!asideRef) return;
+      if (!e.currentTarget) return;
+      const clickedOnSidebar = asideRef.contains(e.target as HTMLElement);
+      console.log(clickedOnSidebar);
+
+      untrack(() => {
+        console.log("hello");
+        if (!clickedOnSidebar && sidebarState.isSidebarOpen) {
+          console.log("hello2");
+          sidebarState.closeSidebar();
+        }
+      });
+    });
+  }
+});
+
 const sidebar: Aside = {
   title: "Railway API Docs",
   links: [
@@ -51,8 +73,10 @@ const sidebar: Aside = {
 </script>
 
 <aside
+  bind:this={asideRef}
   class="bg-background relative"
-  class:sidebar-open={sidebarState.isSidebarOpen}
+  class:open={sidebarState.isSidebarOpen}
+  onclick={() => console.log("Sidebar clicked")}
 >
   <div class="sticky w-full top-0 left-0 grid gap-4 pt-8 bg-background">
     <div>{sidebar.title}</div>
@@ -62,7 +86,7 @@ const sidebar: Aside = {
       type="button"
       class="absolute right-0 top-3"
       aria-label="Close"
-      onclick={sidebarState.toggleSidebar}
+      onclick={() => sidebarState.closeSidebar()}
     >
       <Cross1 />
     </button>
@@ -95,6 +119,7 @@ aside {
   gap: 1rem;
   overflow: auto;
   height: calc(100dvh - var(--navbar-height));
+  transition: all 250ms;
 }
 
 aside::-webkit-scrollbar {
@@ -121,12 +146,11 @@ aside::-webkit-scrollbar-thumb {
     left: -320px;
     width: 320px;
     height: 100dvh;
-
-    transition: transform 250ms;
   }
 
-  .sidebar-open {
-    transform: translateY(320px);
+  .open {
+    left: 0;
+    margin-right: 100dvw;
   }
 
   #sidebar-close-btn {

@@ -7,8 +7,6 @@ editLink: true
 lang: en-US
 ---
 
-# {title}
-
 The Railway API is a REST API for getting train , schedules, station , trains
 between stations and other railway related informations. The API consists of
 several resources which support standard HTTP operation for accomplishing
